@@ -74,8 +74,11 @@ WSGI_APPLICATION = 'Academic_Issue_Tracking_System.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'AITS_db',
+        'USER': 'postgres',
+        'PASSWORD': 'Emma1234',
+        'HOST': 'localhost',
     }
 }
 
