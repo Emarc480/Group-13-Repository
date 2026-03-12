@@ -5,7 +5,7 @@ module.exports = {
     entry: "./src/index.js",
     output: {
         path: path.resolve(__dirname, "./static/frontend"),
-        filename: "[name]".js,
+        filename: "[name].js",
     },
     module: {
         rules: [
@@ -21,12 +21,12 @@ module.exports = {
     optimization: {
         minimize: true,
     },
-    plugins: [
-        new webpack.DefinePlugin({
-            "process.env": {
-                //affects react lib size
-                NODE_ENV: JSON.stringify("production"),
-            },
-        }),
-    ],
+    //plugins: [
+    //    new webpack.DefinePlugin({
+    //        "process.env": {
+    //            //affects react lib size
+    //            NODE_ENV: JSON.stringify("production"),
+    //        },
+    //    }),
+    //],
 };

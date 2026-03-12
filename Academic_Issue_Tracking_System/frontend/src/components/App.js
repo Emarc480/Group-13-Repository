@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { render } from "react-dom";
 
 export default class App extends Component {
     constructor(props) {
@@ -10,6 +9,3 @@ export default class App extends Component {
         return <h1>Testing if react works!</h1>
     }
 }
-
-const appDiv = document.getElementById("app");
-render(<App />, appDiv);
