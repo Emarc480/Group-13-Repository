@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'AITS.apps.AitsConfig',
     'rest_framework',
     'rest_framework_simplejwt',
+    'frontend.apps.FrontendConfig'
 ]
 
 MIDDLEWARE = [
