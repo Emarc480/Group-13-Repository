@@ -6,6 +6,6 @@ export default class App extends Component {
     }
 
     render() {
-        return <h1>Testing if react works!</h1>
+        return <h1>Testing if react orks!</h1>
     }
 }
