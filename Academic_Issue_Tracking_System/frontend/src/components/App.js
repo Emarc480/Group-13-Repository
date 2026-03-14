@@ -1,11 +1,11 @@
 import React, { Component } from "react";
+import Homepage from "./Homepage";
 
-export default class App extends Component {
-    constructor(props) {
-        super(props);
-    }
 
-    render() {
-        return <h1>Testing if react orks!</h1>
-    }
+export default function App() {
+    return (
+        <div>
+            <Homepage />
+        </div>
+    );
 }
