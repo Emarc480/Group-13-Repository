@@ -1,5 +1,5 @@
 from rest_framework import generics
-from rest_framework.permissions import AllowAny # Add this import
+from rest_framework.permissions import AllowAny
 from .serializers import AITS_RegistrationSerializer
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -12,10 +12,12 @@ from django.contrib.auth import authenticate
 from .models import User
 from .permissions import IsRegistrar, IsLecturer, IsStudent
 
+
 class AITS_RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = AITS_RegistrationSerializer
-    permission_classes = [AllowAny] # Add this line
+    permission_classes = [AllowAny]
+
 
 def main(request):
     return HttpResponse("We good to go G")
