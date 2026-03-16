@@ -16,6 +16,10 @@ module.exports = {
                     loader: "babel-loader",
                 },
             },
+            {
+                test: /\.(png|jpg|gif|jpeg|gif)$/i,
+                type: "asset/resource",
+            },
         ],
     },
     optimization: {
