@@ -37,8 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'AITS.apps.AitsConfig',
-    'rest_framework'
+    #'AITS.apps.AitsConfig',
+    'rest_framework',
+    'AITS',
 ]
 
 MIDDLEWARE = [
@@ -74,13 +75,20 @@ WSGI_APPLICATION = 'Academic_Issue_Tracking_System.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'AITS_db',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Emma1234',
+#         'HOST': 'localhost',
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'AITS_db',
-        'USER': 'postgres',
-        'PASSWORD': 'Emma1234',
-        'HOST': 'localhost',
+    'default':{
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
     }
 }
 
