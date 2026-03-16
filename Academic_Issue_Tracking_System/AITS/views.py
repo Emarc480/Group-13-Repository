@@ -12,10 +12,12 @@ from django.contrib.auth import authenticate
 from .models import User
 from .permissions import IsRegistrar, IsLecturer, IsStudent
 
+
 class AITS_RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = AITS_RegistrationSerializer
     permission_classes = [AllowAny]
+
 
 def main(request):
     return HttpResponse("We good to go G")
