@@ -98,3 +98,7 @@
     border-radius: 50px;
     cursor: pointer;
 }
+.gray{
+    background: #EAEAEA;
+    color: #676767;
+}
