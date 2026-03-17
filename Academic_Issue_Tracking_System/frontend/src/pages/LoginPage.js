@@ -15,7 +15,7 @@ const LoginPage = () => {
             <div className='inputs'>
                 <div className='input'>
                     <img src={user_icon} alt="" />
-                    <input type="text" placeholder='Username' />
+                    <input type="text" placeholder='Name' />
                 </div>
                 <div className='input'>
                     <img src={email_icon} alt="" />
@@ -30,8 +30,8 @@ const LoginPage = () => {
                 <span><a href="#">Click here</a></span>
             </div>
             <div className="submit-container">
-                <button className="submit">Sign Up</button>
-                <button className="submit">Log in</button>
+                <div className="submit">Sign Up</div>
+                <div className="submit">Log in</div>
             </div>
         </div>
     )
