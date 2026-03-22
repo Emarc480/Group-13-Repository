@@ -20,7 +20,7 @@ class AITS_RegisterView(generics.CreateAPIView):
 
 
 def main(request):
-    return HttpResponse("We good to go G")
+    return HttpResponse("Welcome to the Academic Issue Tracking System API")
 
 
 # Login View
