@@ -1,5 +1,6 @@
 import React from "react";
 import '../components/LoginPage.css'
+import { useNavigate } from "react-router-dom";
 
 import user_icon from '../assets/user.png'
 import email_icon from '../assets/mail.png'
@@ -11,10 +12,11 @@ const LoginPage = () => {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [name, setName] = React.useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('/api/login', {
+            const response = await fetch('/api/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -31,6 +33,8 @@ const LoginPage = () => {
             if (data.token) {
                 localStorage.setItem('token', data.token);
                 alert('Login successful!');
+
+                navigate('/dashboard');
             } else {
                 alert(data.error || 'Login failed. Please try again.');
             }
