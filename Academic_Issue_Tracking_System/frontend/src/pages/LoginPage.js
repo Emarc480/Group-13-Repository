@@ -19,16 +19,23 @@ const LoginPage = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({
+                    username: email,
+                    password: password,
+                }),
             });
+
             const data = await response.json();
-            if (response.ok) {
-                // Handle successful login
+            console.log("Login Response", data);
+
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                alert('Login successful!');
             } else {
-                // Handle login error
+                alert(data.error || 'Login failed. Please try again.');
             }
         } catch (error) {
-            // Handle fetch error
+            console.error('Login error:', error);
         }
     }
 
@@ -42,16 +49,16 @@ const LoginPage = () => {
             <div className='inputs'>
                 {action === "Login" ? <div></div> : <div className='input'>
                     <img src={user_icon} alt="" />
-                    <input type="text" placeholder='Name' onChange={(e) => setName(e.target.value)} />
+                    <input type="text" id='name' placeholder='Name' onChange={(e) => setName(e.target.value)} />
                 </div>}
 
                 <div className='input'>
                     <img src={email_icon} alt="" />
-                    <input type="email" placeholder='Email' />
+                    <input type="email" id='email' placeholder='Email' onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className='input'>
                     <img src={password_icon} alt="" />
-                    <input type="password" placeholder='Password' onChange={(e) => setPassword(e.target.value)} />
+                    <input type="password" id='password' placeholder='Password' onChange={(e) => setPassword(e.target.value)} />
                 </div>
             </div>
             {action === "Sign Up" ? <div></div> : <div className="forgot-password">Forgot password?
@@ -62,7 +69,13 @@ const LoginPage = () => {
                 <div className={action === "Login" ? "submit gray" : "submit"} onClick={() => setAction("Sign Up")}>
                     Sign Up
                 </div>
-                <div className={action === "Sign Up" ? "submit gray" : "submit"} onClick={() => setAction("Login")}>
+                <div className={action === "Sign Up" ? "submit gray" : "submit"} onClick={() => {
+                    if (action === "Login") {
+                        handleLogin();
+                    } else {
+                        setAction("Login")
+                    }
+                }}>
                     Login
                 </div>
             </div>
