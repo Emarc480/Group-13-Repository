@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-<<<<<<< HEAD
 class AbstractUser:
     ROLE_CHOICES = (
         ('student', 'Student'),
@@ -28,8 +27,6 @@ class AbstractUser:
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-=======
->>>>>>> aef1870217d8448c31106e0522323e4686f6bd95
 
 class Department(models.Model):
     name = models.CharField(max_length=100)
