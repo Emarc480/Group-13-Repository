@@ -11,6 +11,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import User
 from .permissions import IsRegistrar, IsLecturer, IsStudent
+from .serializers import IssueSerializer
+from .models import Issue
 
 
 class AITS_RegisterView(generics.CreateAPIView):
@@ -20,11 +22,7 @@ class AITS_RegisterView(generics.CreateAPIView):
 
 
 def main(request):
-<<<<<<< HEAD
-    return HttpResponse("Welcome to the Academic Issue Tracking System")
-=======
     return HttpResponse("Welcome to the Academic Issue Tracking System API")
->>>>>>> aef1870217d8448c31106e0522323e4686f6bd95
 
 
 # Login View
@@ -78,3 +76,13 @@ def registrar_dashboard(request):
 
 def profile(request):
     return Response("Your profile is as follows")
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsStudent])
+def submit_issue(request):
+    serializer = IssueSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(student=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
