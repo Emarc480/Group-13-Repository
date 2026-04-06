@@ -1,7 +1,14 @@
 import React from "react";
 import '../components/Homepage.css'
+import { useNavigate } from "react-router-dom";
 
 export default function Homepage() {
+    const navigate = useNavigate();
+
+    const handleLoginClick = () => {
+        navigate('/login');
+    };
+
     return (
         <div className="homepage">
             <div className="header">
@@ -11,7 +18,7 @@ export default function Homepage() {
                 <p>This is the main landing page of our application.</p>
             </div>
             <div className="login-link">
-                <a href="/login">Login</a>
+                <button onClick={handleLoginClick}>Login</button>
             </div>
         </div>
     );
