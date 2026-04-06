@@ -1,0 +1,19 @@
+.homepage {
+    text-align: center;
+    padding: 50px;
+    background-color: azure;
+    height: 100%;
+}
+
+.header {
+    font-size: 30px;
+    font-weight: bold;
+    color: #0000ff;
+    margin-bottom: 20px;
+}
+
+.content {
+    font-size: 18px;
+    color: #333333;
+    margin-bottom: 30px;
+}
