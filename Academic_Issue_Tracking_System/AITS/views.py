@@ -18,7 +18,7 @@ class AITS_RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny] # Add this line
 
 def main(request):
-    return HttpResponse("We good to go G")
+    return HttpResponse("Welcome to the Academic Issue Tracking System")
 
 
 # Login View
@@ -69,3 +69,6 @@ def lecturer_dashboard(request):
 @permission_classes([IsAuthenticated, IsRegistrar])
 def registrar_dashboard(request):
     return Response({'message': f'Welcome registrar {request.user.username}'})
+
+def profile(request):
+    return Response("Your profile is as follows")
