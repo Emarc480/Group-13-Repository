@@ -1,5 +1,5 @@
 import React from "react";
-import '../components/LoginPage.css'
+import '../components/CSS/LoginPage.css'
 import { useNavigate } from "react-router-dom";
 
 import user_icon from '../assets/user.png'
@@ -32,6 +32,7 @@ const LoginPage = () => {
 
             if (data.token) {
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.role);
                 alert('Login successful!');
 
                 navigate('/dashboard');
