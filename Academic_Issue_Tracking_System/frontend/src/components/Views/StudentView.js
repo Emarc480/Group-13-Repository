@@ -1,10 +1,12 @@
-import React from "react";
+import React from 'react';
 
-export default function StudentView() {
+const StudentView = () => {
     return (
         <div>
             <h2>Student View</h2>
-            <p>This is the student dashboard where students can view their issues, submit new issues, and track the status of their existing issues.</p>
+            <p>Welcome, student! Here you can view your courses, assignments, and grades.</p>
         </div>
     );
-}
+};
+
+export default StudentView;

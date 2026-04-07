@@ -8,6 +8,12 @@ import RegistrarView from "../components/Views/RegistrarView";
 export default function Dashboard() {
     const role = localStorage.getItem('role');
 
+    console.log('ROLE:', role);
+
+    if (!role) {
+        return <h2>No role found.</h2>;
+    }
+
     return (
         <div>
             <h1>Dashboard</h1>
