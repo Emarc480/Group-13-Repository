@@ -8,20 +8,27 @@ import RegistrarView from "../components/Views/RegistrarView";
 export default function Dashboard() {
     const role = localStorage.getItem('role');
 
-    console.log('ROLE:', role);
+    const renderView = () => {
+        switch (role) {
+            case 'student':
+                return <StudentView />;
+            case 'lecturer':
+                return <LecturerView />;
+            case 'hod':
+                return <HodView />;
+            case 'registrar':
+                return <RegistrarView />;
+            default:
+                return <h2>Invalid role.</h2>;
+        }
+    };
 
-    if (!role) {
-        return <h2>No role found.</h2>;
-    }
 
     return (
         <div>
             <h1>Dashboard</h1>
 
-            {role === 'student' && (<StudentView />)}
-            {role === 'lecturer' && (<LecturerView />)}
-            {role === 'hod' && (<HodView />)}
-            {role === 'registrar' && (<RegistrarView />)}
+            {renderView()}
 
         </div>
     );
