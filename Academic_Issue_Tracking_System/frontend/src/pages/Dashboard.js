@@ -4,6 +4,7 @@ import StudentView from "../components/Views/StudentView";
 import LecturerView from "../components/Views/LecturerView";
 import HodView from "../components/Views/HodView";
 import RegistrarView from "../components/Views/RegistrarView";
+import '../components/CSS/Dashboard.css'
 
 export default function Dashboard() {
     const role = localStorage.getItem('role');
@@ -26,10 +27,19 @@ export default function Dashboard() {
 
     return (
         <div>
-            <h1>Dashboard</h1>
-
-            {renderView()}
-
+            <div className="wrapper">
+                <nav>
+                    <div className="navbar">
+                        <a href="/dashboard">Dashboard</a>
+                        <a href="/profile">Profile</a>
+                        <a href="/settings">Settings</a>
+                        <a href="/logout">Logout</a>
+                    </div>        
+                </nav>    
+            </div>
+            <div>
+                {renderView()}
+            </div>
         </div>
     );
 };
