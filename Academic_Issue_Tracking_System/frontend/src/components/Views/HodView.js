@@ -7,7 +7,6 @@ const HodView = () => {
         const fetchIssues = async () => {
             try {
                 const response = await fetch('/api/hod/issues/', {
-                    method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -24,8 +23,14 @@ const HodView = () => {
 
     return (
         <div>
-            <h2>HOD View</h2>
-            <p>Welcome, HOD! Here you can manage departmental information and view reports.</p>
+            <h2>Departmental Issues</h2>
+            
+            {issues.map(issue => (
+                <div key={issue.id}>
+                    <p>{issue.course}</p>
+                    <p>{issue.status}</p>
+                </div>
+            ))}
         </div>
     );
 };

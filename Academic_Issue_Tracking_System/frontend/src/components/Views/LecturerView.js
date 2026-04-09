@@ -7,7 +7,6 @@ const LecturerView = () => {
         const fetchIssues = async () => {
             try {
                 const response = await fetch('/api/lecturer/issues/', {
-                    method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -19,13 +18,25 @@ const LecturerView = () => {
             }
         };
 
+
         fetchIssues();
     }, []);
 
     return (
         <div>
-            <h2>Lecturer View</h2>
-            <p>Welcome, lecturer! Here you can manage your courses and view student submissions.</p>
+            <h1>Lecturer Dashboard</h1>
+            <h2>Assigned Issues</h2>
+
+            {issues.map(issue => (
+                <div key={issue.id}>
+                    <h3>{issue.student}</h3>
+                    <p>{issue.course}</p>
+                    <p>{issue.category}</p>
+                    <p>{issue.status}</p>
+                    <p><strong>Description:</strong> {issue.description}</p>
+                </div>
+            ))}
+            <button onClick={() => updateStatus(issue.id)}>Update Status</button>
         </div>
     );
 };
