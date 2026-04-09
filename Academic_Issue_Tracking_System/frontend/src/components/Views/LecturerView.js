@@ -18,9 +18,28 @@ const LecturerView = () => {
             }
         };
 
+        const updateStatus = async (issueId) => {
+            try {
+                const response = await fetch(`/api/lecturer/issues/${issueId}/update_status/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'In Progress' })
+                });
+                const data = await response.json();
+                setIssues(data);
+            } catch (error) {
+                console.error('Error updating issue status:', error);
+            }
+        };
+
 
         fetchIssues();
     }, []);
+
+    console.log('Issues:', issues);
 
     return (
         <div>
@@ -29,14 +48,16 @@ const LecturerView = () => {
 
             {issues.map(issue => (
                 <div key={issue.id}>
-                    <h3>{issue.student}</h3>
-                    <p>{issue.course}</p>
-                    <p>{issue.category}</p>
-                    <p>{issue.status}</p>
-                    <p><strong>Description:</strong> {issue.description}</p>
+                    <div>
+                        <h3>{issue.student}</h3>
+                        <p>{issue.course_code}</p>
+                        <p>{issue.category}</p>
+                        <p>{issue.status}</p>
+                        <p><strong>Description:</strong> {issue.description}</p>
+                    </div>
+                    <button onClick={() => updateStatus(issue.id)}>Update Status</button>
                 </div>
             ))}
-            <button onClick={() => updateStatus(issue.id)}>Update Status</button>
         </div>
     );
 };
