@@ -26,19 +26,19 @@ export default function Dashboard() {
 
 
     return (
-        <div>
+        <div className="dashboard-container">
             <div className="wrapper">
                 <nav>
                     <div className="navbar">
                         <a href="/dashboard">Dashboard</a>
                         <a href="/profile">Profile</a>
                         <a href="/settings">Settings</a>
-                        <a href="/logout">Logout</a>
-                    </div>        
-                </nav>    
-            </div>
-            <div>
-                {renderView()}
+                        <a href="/logout" className="logout">Logout</a>
+                    </div>
+                </nav>
+                <div>
+                    {renderView()}
+                </div>
             </div>
         </div>
     );
