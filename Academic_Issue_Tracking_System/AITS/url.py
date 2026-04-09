@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AITS_RegisterView
+from .views import AITS_RegisterView, hod_issues, lecturer_issues
 from .views import main, login_view, student_dashboard, lecturer_dashboard, registrar_dashboard
 
 
@@ -10,4 +10,6 @@ urlpatterns = [
     path('api/lecturer/dashboard/', lecturer_dashboard, name='lecturer-dashboard'),
     path('api/registrar/dashboard/', registrar_dashboard, name='registrar-dashboard'),
     path('register/', AITS_RegisterView.as_view(), name='aits_register'),
+    path('api/lecturer/issues/', lecturer_issues, name='lecturer-issues'),
+    path('api/hod/issues/', hod_issues, name='hod-issues'),
 ]

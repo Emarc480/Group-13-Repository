@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import User
+from .models import Issue, User
 from .permissions import IsRegistrar, IsLecturer, IsStudent
 
 
@@ -53,6 +53,40 @@ def login_view(request):
         'username': user.username,
     })
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def lecturer_issues(request):
+    issues = Issue.objects.filter(assigned_to=request.user)
+
+    data = [
+        {
+            'id': issue.id,
+            'student': issue.student.username,
+            'category': issue.category,
+            'status': issue.status,
+        }
+        for issue in issues
+    ]
+
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def hod_issues(request):
+    issues = Issue.objects.filter(department=request.user.department)
+
+    data = [
+        {
+            'id': issue.id,
+            'student': issue.student.username,
+            'category': issue.category,
+        }
+        for issue in issues
+    ]
+
+    return Response(data)
 
 # Test protected routes per role
 @api_view(['GET'])
