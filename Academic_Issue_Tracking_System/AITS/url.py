@@ -3,7 +3,6 @@ from .views import AITS_RegisterView, hod_issues, lecturer_issues
 from .views import main, login_view, student_dashboard, lecturer_dashboard, registrar_dashboard, profile, submit_issue
 
 
-
 urlpatterns = [
     path('', main),
     path('api/login/', login_view, name='login'),
@@ -14,7 +13,6 @@ urlpatterns = [
     path('register/', AITS_RegisterView.as_view(), name='aits_register'),
     path('api/lecturer/issues/', lecturer_issues, name='lecturer-issues'),
     path('api/hod/issues/', hod_issues, name='hod-issues'),
-]
     path('profile/', profile, name='profile'),
     path('submit_issue/', submit_issue, name='submit_issue')
 ]
