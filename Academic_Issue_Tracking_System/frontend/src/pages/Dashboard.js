@@ -4,25 +4,42 @@ import StudentView from "../components/Views/StudentView";
 import LecturerView from "../components/Views/LecturerView";
 import HodView from "../components/Views/HodView";
 import RegistrarView from "../components/Views/RegistrarView";
+import '../components/CSS/Dashboard.css'
 
 export default function Dashboard() {
     const role = localStorage.getItem('role');
 
-    console.log('ROLE:', role);
+    const renderView = () => {
+        switch (role) {
+            case 'student':
+                return <StudentView />;
+            case 'lecturer':
+                return <LecturerView />;
+            case 'hod':
+                return <HodView />;
+            case 'registrar':
+                return <RegistrarView />;
+            default:
+                return <h2>Invalid role.</h2>;
+        }
+    };
 
-    if (!role) {
-        return <h2>No role found.</h2>;
-    }
 
     return (
-        <div>
-            <h1>Dashboard</h1>
-
-            {role === 'student' && (<StudentView />)}
-            {role === 'lecturer' && (<LecturerView />)}
-            {role === 'hod' && (<HodView />)}
-            {role === 'registrar' && (<RegistrarView />)}
-
+        <div className="dashboard-container">
+            <div className="wrapper">
+                <nav>
+                    <div className="navbar">
+                        <a href="/dashboard">Dashboard</a>
+                        <a href="/profile">Profile</a>
+                        <a href="/settings">Settings</a>
+                        <a href="/logout" className="logout">Logout</a>
+                    </div>
+                </nav>
+                <div>
+                    {renderView()}
+                </div>
+            </div>
         </div>
     );
 };
