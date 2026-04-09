@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import User
+from .models import Issue, User
 from .permissions import IsRegistrar, IsLecturer, IsStudent
 from .serializers import IssueSerializer
 from .models import Issue
@@ -56,7 +56,64 @@ def login_view(request):
     })
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def lecturer_issues(request):
+    issues = Issue.objects.filter(assigned_to=request.user)
+
+    data = [
+        {
+            'id': issue.id,
+            'student': issue.student.username,
+            'course': issue.course_code,
+            'category': issue.category,
+            'status': issue.status,
+            'description': issue.description,
+        }
+        for issue in issues
+    ]
+
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def hod_issues(request):
+    issues = Issue.objects.filter(department=request.user.department)
+
+    data = [
+        {
+            'id': issue.id,
+            'student': issue.student.username,
+            'category': issue.category,
+            'description': issue.description,
+        }
+        for issue in issues
+    ]
+
+    return Response(data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsLecturer])
+def update_issue_status(request, issue_id):
+    try:
+        issue = Issue.objects.get(id=issue_id, assigned_to=request.user)
+    except Issue.DoesNotExist:
+        return Response({'error': 'Issue not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    new_status = request.data.get('status')
+    if new_status not in ['Open', 'In Progress', 'Resolved']:
+        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+
+    issue.status = new_status
+    issue.save()
+
+    return Response({'message': 'Issue status updated successfully'})
+
 # Test protected routes per role
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsStudent])
 def student_dashboard(request):

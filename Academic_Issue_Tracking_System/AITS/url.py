@@ -1,8 +1,7 @@
 from django.urls import path
-from .views import AITS_RegisterView
-from .views import (main, login_view, student_dashboard, 
-                    lecturer_dashboard, registrar_dashboard,
-                    profile, submit_issue)
+from .views import AITS_RegisterView, hod_issues, lecturer_issues
+from .views import main, login_view, student_dashboard, lecturer_dashboard, registrar_dashboard, profile, submit_issue
+
 
 
 urlpatterns = [
@@ -10,8 +9,12 @@ urlpatterns = [
     path('api/login/', login_view, name='login'),
     path('api/student/dashboard/', student_dashboard, name='student-dashboard'),
     path('api/lecturer/dashboard/', lecturer_dashboard, name='lecturer-dashboard'),
-    path('api/registrar/dashboard/', registrar_dashboard, name='registrar-dashboard'),
+    path('api/registrar/dashboard/', registrar_dashboard,
+         name='registrar-dashboard'),
     path('register/', AITS_RegisterView.as_view(), name='aits_register'),
+    path('api/lecturer/issues/', lecturer_issues, name='lecturer-issues'),
+    path('api/hod/issues/', hod_issues, name='hod-issues'),
+]
     path('profile/', profile, name='profile'),
     path('submit_issue/', submit_issue, name='submit_issue')
 ]
