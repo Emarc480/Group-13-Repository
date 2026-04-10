@@ -1,40 +1,12 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-class User(AbstractUser):
-    ROLE_CHOICES = (
-        ('student', 'Student'),
-        ('registrar', 'Academic Registrar'),
-        ('lecturer', 'Lecturer'),
-    )
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
-    registration_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
-
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='aits_users',
-        blank=True,
-    )
-
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='aits_users',
-        blank=True,
-    )
-    
-    def __str__(self):
-        return f"{self.username} ({self.role})"
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-
-
 class Department(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=10)
 
     def __str__(self):
         return self.name
-
 
 class User(AbstractUser):
     ROLE_CHOICES = [
@@ -43,13 +15,23 @@ class User(AbstractUser):
         ('hod', 'Head of Department'),
         ('registrar', 'Academic Registrar'),
     ]
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-    student_number = models.CharField(max_length=20, blank=True, null=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
+    registration_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='aits_users',
+        blank=True,
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='aits_users',
+        blank=True,
+    )
 
     def __str__(self):
         return f"{self.username} ({self.role})"
-
 
 class Issue(models.Model):
     CATEGORY_CHOICES = [
@@ -64,8 +46,8 @@ class Issue(models.Model):
         ('closed', 'Closed'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='issues')
-    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_issues')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_issues')
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     course_code = models.CharField(max_length=20)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
@@ -76,7 +58,6 @@ class Issue(models.Model):
 
     def __str__(self):
         return f"{self.course_code} - {self.category} ({self.status})"
-
 
 class AuditLog(models.Model):
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='logs')
