@@ -10,8 +10,8 @@ from .views import (
     submit_issue,
     assign_issue,
     resolve_issue,
-    lecturer_issues,
-    hod_issues,
+    #lecturer_issues,
+    #hod_issues,
 )
 
 urlpatterns = [
@@ -30,8 +30,8 @@ urlpatterns = [
     path('api/registrar/dashboard/', registrar_dashboard,
          name='registrar-dashboard'),
     path('register/', AITS_RegisterView.as_view(), name='aits_register'),
-    path('api/lecturer/issues/', lecturer_issues, name='lecturer-issues'),
-    path('api/hod/issues/', hod_issues, name='hod-issues'),
+    #path('api/lecturer/issues/', lecturer_issues, name='lecturer-issues'),
+    #path('api/hod/issues/', hod_issues, name='hod-issues'),
     path('profile/', profile, name='profile'),
     path('submit_issue/', submit_issue, name='submit_issue'),
 
