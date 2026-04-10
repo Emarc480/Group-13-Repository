@@ -9,23 +9,22 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import Issue, User
+from .models import User
 from .permissions import IsRegistrar, IsLecturer, IsStudent
 from .serializers import IssueSerializer
 from .models import Issue
 
+# --- This is the Welcome View ---
+def main(request):
+    return HttpResponse("Welcome to the Academic Issue Tracking System API")
 
+# --- This is the Register View ---
 class AITS_RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = AITS_RegistrationSerializer
     permission_classes = [AllowAny]
 
-
-def main(request):
-    return HttpResponse("Welcome to the Academic Issue Tracking System API")
-
-
-# Login View
+# --- This is the Login View ---
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -55,91 +54,85 @@ def login_view(request):
         'username': user.username,
     })
 
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def lecturer_issues(request):
-    issues = Issue.objects.filter(assigned_to=request.user)
-
-    data = [
-        {
-            'id': issue.id,
-            'student': issue.student.username,
-            'course': issue.course_code,
-            'category': issue.category,
-            'status': issue.status,
-            'description': issue.description,
-        }
-        for issue in issues
-    ]
-
-    return Response(data)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def hod_issues(request):
-    issues = Issue.objects.filter(department=request.user.department)
-
-    data = [
-        {
-            'id': issue.id,
-            'student': issue.student.username,
-            'category': issue.category,
-            'description': issue.description,
-        }
-        for issue in issues
-    ]
-
-    return Response(data)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, IsLecturer])
-def update_issue_status(request, issue_id):
-    try:
-        issue = Issue.objects.get(id=issue_id, assigned_to=request.user)
-    except Issue.DoesNotExist:
-        return Response({'error': 'Issue not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    new_status = request.data.get('status')
-    if new_status not in ['Open', 'In Progress', 'Resolved']:
-        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
-
-    issue.status = new_status
-    issue.save()
-
-    return Response({'message': 'Issue status updated successfully'})
-
-# Test protected routes per role
-
-
+# Student Dashboard --- displays info related to the student ---
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsStudent])
 def student_dashboard(request):
-    return Response({'message': f'Welcome student {request.user.username}'})
+    issues = Issue.objects.filter(student=request.user)
+    serializer = IssueSerializer(issues, many=True)
+    return Response({
+        'username': request.user.username,
+        'student_number':request.user.student_number,
+        'stats': {
+            'total': issues.count(),
+            'open': issues.filter(status='open').count(),
+            'in_progress': issues.filter(status = 'in_progress').count(),
+            'resolved': issues.filter(status = 'resolved').count(),
+        },
+        'issues': serializer.data
+        })
 
+# --- This is the Submit Issue View ---
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsStudent])
+def submit_issue(request):
+    serializer = IssueSerializer(data = request.data)
+    if serializer.is_valid():
+        serializer.save(student = request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Lecturer Dashboard --- displays info related to the Lecturer ---
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsLecturer])
 def lecturer_dashboard(request):
     return Response({'message': f'Welcome lecturer {request.user.username}'})
 
 
+# Registrar Dashboard --- displays info related to the Registrar ---
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsRegistrar])
 def registrar_dashboard(request):
     return Response({'message': f'Welcome registrar {request.user.username}'})
 
-def profile(request):
-    return Response("Your profile is as follows")
+# --- Assign issue (Registrar only) ---
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated, IsRegistrar])
+def assign_issue(request, issue_id):
+    try:
+        issue = Issue.objects.get(id=issue_id)
+    except Issue.DoesNotExist:
+        return Response({'error': 'Issue not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    assigned_to_id = request.data.get('assigned_to')
+    issue.assigned_to_id = assigned_to_id
+    issue.status = 'in_progress'
+    issue.save()
+    return Response({'message': 'Issue assigned successfully'})
 
+# --- Resolve issue (Registrar only) ---
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def resolve_issue(request, issue_id):
+    try:
+        issue = Issue.objects.get(id=issue_id)
+    except Issue.DoesNotExist:
+        return Response({'error': 'Issue not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    issue.status = 'resolved'
+    issue.save()
+    return Response({'message': 'Issue resolved successfully'})
+
+# Profile --- displays info related to the current user ---
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsStudent])
-def submit_issue(request):
-    serializer = IssueSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(student=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+@permission_classes([IsAuthenticated])
+def profile(request):
+    return Response(
+        "Your profile is as follows",
+        {
+            'username': request.user.username,
+            'email': request.user.email,
+            'role': request.user.role,
+            'student_number': request.user.student_number,
+            'department': request.user.department.name if request.user.department else None,
+        })
