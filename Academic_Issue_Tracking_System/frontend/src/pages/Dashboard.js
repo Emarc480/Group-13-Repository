@@ -16,8 +16,6 @@ export default function Dashboard() {
 
     return (
         <div>
-            <h1>Dashboard</h1>
-
             {role === 'student' && (<StudentView />)}
             {role === 'lecturer' && (<LecturerView />)}
             {role === 'hod' && (<HodView />)}

@@ -9,20 +9,20 @@ import password_icon from '../assets/lock.png'
 const LoginPage = () => {
 
     const [action, setAction] = React.useState('Sign Up');
-    const [email, setEmail] = React.useState('');
+    const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [name, setName] = React.useState('');
     const navigate = useNavigate();
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('/api/login/', {
+            const response = await fetch('http://127.0.0.1:8000/api/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    username: email,
+                    username: username,
                     password: password,
                 }),
             });
@@ -32,18 +32,18 @@ const LoginPage = () => {
 
             if (data.token) {
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('refresh', data.refresh);
                 localStorage.setItem('role', data.role);
-                alert('Login successful!');
-
-                navigate('/dashboard');
+                localStorage.setItem('username', data.username);
+                navigate('/home/dashboard/');
             } else {
                 alert(data.error || 'Login failed. Please try again.');
             }
         } catch (error) {
             console.error('Login error:', error);
+            alert('Network error. Make sure the server is running.');
         }
-    }
-
+    };
 
     return (
         <div className='container'>
@@ -52,40 +52,62 @@ const LoginPage = () => {
                 <div className="underline"></div>
             </div>
             <div className='inputs'>
-                {action === "Login" ? <div></div> : <div className='input'>
-                    <img src={user_icon} alt="" />
-                    <input type="text" id='name' placeholder='Name' onChange={(e) => setName(e.target.value)} />
-                </div>}
-
+                {action === "Login" ? <div></div> : (
+                    <div className='input'>
+                        <img src={user_icon} alt="" />
+                        <input
+                            type="text"
+                            placeholder='Name'
+                            onChange={(e) => setName(e.target.value)}
+                        />
+                    </div>
+                )}
                 <div className='input'>
                     <img src={email_icon} alt="" />
-                    <input type="email" id='email' placeholder='Email' onChange={(e) => setEmail(e.target.value)} />
+                    <input
+                        type="text"
+                        placeholder='Username'
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
                 </div>
                 <div className='input'>
                     <img src={password_icon} alt="" />
-                    <input type="password" id='password' placeholder='Password' onChange={(e) => setPassword(e.target.value)} />
+                    <input
+                        type="password"
+                        placeholder='Password'
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
                 </div>
             </div>
-            {action === "Sign Up" ? <div></div> : <div className="forgot-password">Forgot password?
-                <span><a href="#">Click here</a></span>
-            </div>}
+
+            {action === "Sign Up" ? <div></div> : (
+                <div className="forgot-password">Forgot password?
+                    <span><a href="#">Click here</a></span>
+                </div>
+            )}
 
             <div className="submit-container">
-                <div className={action === "Login" ? "submit gray" : "submit"} onClick={() => setAction("Sign Up")}>
+                <div
+                    className={action === "Login" ? "submit gray" : "submit"}
+                    onClick={() => setAction("Sign Up")}
+                >
                     Sign Up
                 </div>
-                <div className={action === "Sign Up" ? "submit gray" : "submit"} onClick={() => {
-                    if (action === "Login") {
-                        handleLogin();
-                    } else {
-                        setAction("Login")
-                    }
-                }}>
+                <div
+                    className={action === "Sign Up" ? "submit gray" : "submit"}
+                    onClick={() => {
+                        if (action === "Login") {
+                            handleLogin();
+                        } else {
+                            setAction("Login");
+                        }
+                    }}
+                >
                     Login
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default LoginPage
+export default LoginPage;
