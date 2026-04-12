@@ -1,16 +1,14 @@
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import AITS_RegistrationSerializer
-from django.shortcuts import render
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import User
-from .permissions import IsRegistrar, IsLecturer, IsStudent
+from .permissions import IsRegistrar, IsLecturer, IsStudent, IsIssueOwner
 from .serializers import IssueSerializer
 from .models import Issue, AuditLog
 
@@ -109,7 +107,7 @@ def issue_detail(request, issue_id):
 
 # This view helps a student edit their issue(only if still open)
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated, IsStudent])
+@permission_classes([IsAuthenticated, IsStudent, IsIssueOwner])
 def edit_issue(request, issue_id):
     try:
         issue = Issue.objects.get(id=issue_id, student=request.user)
@@ -130,11 +128,9 @@ def edit_issue(request, issue_id):
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
 # This view is used by student to withdraw an issue
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsStudent])
+@permission_classes([IsAuthenticated, IsStudent, IsIssueOwner])
 def withdraw_issue(request, issue_id):
     try:
         issue = Issue.objects.get(id=issue_id, student=request.user)
