@@ -25,3 +25,4 @@ urlpatterns = [
     path('api/registrar/all-issues/', registrar_all_issues, name='registrar-all-issues'),
     path('api/registrar/update-issue/<int:issue_id>/', registrar_update_issue, name='registrar-update'),
 ]
+    # path('register/', AITS_RegisterView.as_view(), name='aits_register')
