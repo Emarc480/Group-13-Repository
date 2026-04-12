@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Department, User, Issue, AuditLog
+from .models import User, Issue
 
 class AITS_RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -11,17 +11,6 @@ class AITS_RegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
-
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Department
-        fields = '__all__'
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
 
 class IssueSerializer(serializers.ModelSerializer):
 
@@ -68,5 +57,5 @@ class IssueSerializer(serializers.ModelSerializer):
     
 class AuditLogSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AuditLog
-        fields = '__all__'
+        model = Issue
+        fields = ['id', 'student', 'student_name', 'category', 'description', 'status', 'created_at']
