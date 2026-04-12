@@ -10,6 +10,10 @@ from .views import (
     submit_issue,
     assign_issue,
     resolve_issue,
+    list_issues,
+    issue_detail,
+    edit_issue,
+    withdraw_issue,
 )
 
 
@@ -22,7 +26,11 @@ urlpatterns = [
 
     # Student
     path('api/student/dashboard/', student_dashboard, name='student-dashboard'),
-    path('api/student/submit_issue/', submit_issue, name='submit-issue'),
+    path('api/student/issues/', submit_issue, name='submit-issue'),
+    path('api/student/issues/all/', list_issues, name='list-issues'),
+    path('api/student/issues/<int:issue_id>/', issue_detail, name='issue-detail'),
+    path('api/studeent/issues/<int:issue_id>/edit/', edit_issue, name='edit-issue'),
+    path('api/student/issues/<int:issue_id>/withdraw/', withdraw_issue, name='withdraw-issue'),
 
     # Lecturer
     path('api/lecturer/dashboard/', lecturer_dashboard, name='lecturer-dashboard'),
@@ -32,4 +40,3 @@ urlpatterns = [
     path('api/registrar/assign-issue/<int:issue_id>/', assign_issue, name='assign-issue'),
     path('api/registrar/resolve-issue/<int:issue_id>/', resolve_issue, name='resolve-issue'),
 ]
-    # path('register/', AITS_RegisterView.as_view(), name='aits_register')

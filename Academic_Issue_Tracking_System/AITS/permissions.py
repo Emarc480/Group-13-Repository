@@ -39,3 +39,11 @@ class IsRegistrarOrHOD(BasePermission):
     """
     def has_permission(self, request, view):
         return request.user.role in ['registrar', 'hod']
+    
+class IsIssueOwner(BasePermission):
+    """
+    Allows access only to the owner of the student who submitted the issue.
+    Used for edit and withidraw endpoints to ensure only the student who submitted the issue can edit or withdraw it.
+    """
+    def has_object_permission(self, request, view, obj):
+        return obj.student == request.user
