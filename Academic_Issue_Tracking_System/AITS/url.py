@@ -15,6 +15,8 @@ from .views import (
     department_list,
     registrar_all_issues,
     registrar_update_issue,
+    lecturer_issues,
+    #hod_issues,
 )
 
 urlpatterns = [
@@ -42,18 +44,18 @@ urlpatterns = [
     path('api/registrar/dashboard/', registrar_dashboard,
          name='registrar-dashboard'),
     path('register/', AITS_RegisterView.as_view(), name='aits_register'),
-    # path('api/lecturer/issues/', lecturer_issues, name='lecturer-issues'),
-    # path('api/hod/issues/', hod_issues, name='hod-issues'),
+    path('api/lecturer/issues/', lecturer_issues, name='lecturer-issues'),
+    #path('api/hod/issues/', hod_issues, name='hod-issues'),
     path('profile/', profile, name='profile'),
     path('submit_issue/', submit_issue, name='submit_issue'),
 
     # Registrar
     path('api/registrar/dashboard/', registrar_dashboard,
          name='registrar-dashboard'),
-    path('api/registrar/assign-issue/<int:issue_id>/',
-         assign_issue, name='assign-issue'),
-    path('api/registrar/resolve-issue/<int:issue_id>/',
-         resolve_issue, name='resolve-issue'),
+    # path('api/registrar/assign-issue/<int:issue_id>/',
+    #     assign_issue, name='assign-issue'),
+    # path('api/registrar/resolve-issue/<int:issue_id>/',
+    #     resolve_issue, name='resolve-issue'),
 
 
     # path('register/', AITS_RegisterView.as_view(), name='aits_register')

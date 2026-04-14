@@ -19,7 +19,7 @@ const StudentView = () => {
         localStorage.removeItem('refresh');
         localStorage.removeItem('role');
         localStorage.removeItem('username');
-        window.location.href = '/home/login/';
+        window.location.href = '/login';
     };
 
     const fetchDashboard = () => {
@@ -50,17 +50,17 @@ const StudentView = () => {
         setSubmitSuccess(false);
         setSubmitError(null);
 
-        if (!form.course_code.trim()){
+        if (!form.course_code.trim()) {
             setSubmitError('Please enter a course code.');
             return;
         }
 
-        if (form.description.trim().length <20){
+        if (form.description.trim().length < 20) {
             setSubmitError('Description must be at least 20 characters long.');
             return;
         }
 
-        if (!form.department){
+        if (!form.department) {
             setSubmitError('Please select a department.');
             return;
         }
