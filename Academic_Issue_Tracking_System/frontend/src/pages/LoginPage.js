@@ -8,7 +8,7 @@ import password_icon from '../assets/lock.png'
 
 const LoginPage = () => {
 
-    const [action, setAction] = React.useState('Sign Up');
+    const [action, setAction] = React.useState('Login');
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [name, setName] = React.useState('');

@@ -6,7 +6,7 @@ export default function Homepage() {
     const navigate = useNavigate();
 
     const handleLoginClick = () => {
-        navigate('/login');
+        navigate('/home/login');
     };
 
     return (
