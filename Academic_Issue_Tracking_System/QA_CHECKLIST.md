@@ -204,6 +204,49 @@ Run: `python manage.py test AITS`
 
 ---
 
+## 8. Frontend Tests
+
+### 8.1 Login Page
+| # | Check | Expected | Status |
+|---|-------|----------|--------|
+| 8.1.1 | Login with valid credentials | Redirects to dashboard based on role | ✅ |
+| 8.1.2 | Login with wrong password | Error message shown | ✅ |
+| 8.1.3 | Login with empty fields | Error message shown | ✅ |
+| 8.1.4 | JWT token stored after login | `token` exists in localStorage | ✅ |
+| 8.1.5 | Role stored after login | `role` exists in localStorage | ✅ |
+
+### 8.2 Route Protection
+| # | Check | Expected | Status |
+|---|-------|----------|--------|
+| 8.2.1 | Access dashboard without token | Redirects to login page | ✅ |
+| 8.2.2 | Access dashboard with valid token | Dashboard loads correctly | ✅ |
+| 8.2.3 | Dashboard doesn't flash before redirect | Page returns null before redirecting | ✅ |
+
+### 8.3 Issue Submission Form
+| # | Check | Expected | Status |
+|---|-------|----------|--------|
+| 8.3.1 | Submit with empty course code | Error: "Please enter a course code" | ✅ |
+| 8.3.2 | Submit with short description | Error: "Description must be at least 20 characters" | ✅ |
+| 8.3.3 | Submit without selecting department | Error: "Please select a department" | ✅ |
+| 8.3.4 | Department dropdown loads from API | Dropdown shows real departments from database | ✅ |
+| 8.3.5 | Valid submission succeeds | Success toast shown, form resets, issues list refreshes | ✅ |
+| 8.3.6 | Course code normalized to uppercase | Submitting "csc1100" shows "CSC1100" in issues list | ✅ |
+
+### 8.4 Issues List
+| # | Check | Expected | Status |
+|---|-------|----------|--------|
+| 8.4.1 | Issues list loads on dashboard | Student's issues displayed in table | ✅ |
+| 8.4.2 | Empty state shown when no issues | "No issues submitted yet" message | ✅ |
+| 8.4.3 | Status badges display correctly | open, in_progress, resolved shown with correct badge colors | ✅ |
+| 8.4.4 | Stats update after submission | Total and open count increase by 1 | ✅ |
+
+### 8.5 Logout
+| # | Check | Expected | Status |
+|---|-------|----------|--------|
+| 8.5.1 | Logout clears localStorage | token, role, username removed | ✅ |
+| 8.5.2 | Logout redirects to login | User lands on login page | ✅ |
+| 8.5.3 | Cannot go back after logout | Browser back button redirects to login | ✅ |
+
 ## Sign Off
 
 | Role | Name | Date |
