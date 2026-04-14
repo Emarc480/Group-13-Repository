@@ -38,7 +38,7 @@ const StudentView = () => {
     const handleSubmit = () => {
         setSubmitSuccess(false);
         setSubmitError(null);
-        fetch('http://127.0.0.1:8000/api/student/submit_issue/', {
+        fetch('http://127.0.0.1:8000/api/student/issues/', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
