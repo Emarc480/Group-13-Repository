@@ -14,6 +14,7 @@ from .views import (
     issue_detail,
     edit_issue,
     withdraw_issue,
+    department_list,
 )
 
 
@@ -23,6 +24,7 @@ urlpatterns = [
     path('api/login/', login_view, name='login'),
     path('api/register/', AITS_RegisterView.as_view(), name='register'),
     path('api/profile/', profile, name='profile'),
+    path('api/departments/', department_list, name='department-list'),
 
     # Student
     path('api/student/dashboard/', student_dashboard, name='student-dashboard'),

@@ -9,8 +9,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import User
 from .permissions import IsRegistrar, IsLecturer, IsStudent, IsIssueOwner
-from .serializers import IssueSerializer
-from .models import Issue, AuditLog
+from .models import User, Issue, AuditLog, Department
+from .serializers import IssueSerializer, DepartmentSerializer
+
 
 # --- This is the Welcome View ---
 def main(request):
@@ -146,20 +147,20 @@ def withdraw_issue(request, issue_id):
     issue.delete()
     return Response({'message': 'Issue withdrawn successfully'}, status=status.HTTP_204_NO_CONTENT)
 
-# Lecturer Dashboard --- displays info related to the Lecturer ---
+# Lecturer Dashboard --- displays info related to the Lecturer
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsLecturer])
 def lecturer_dashboard(request):
     return Response({'message': f'Welcome lecturer {request.user.username}'})
 
 
-# Registrar Dashboard --- displays info related to the Registrar ---
+# Registrar Dashboard --- displays info related to the Registrar
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsRegistrar])
 def registrar_dashboard(request):
     return Response({'message': f'Welcome registrar {request.user.username}'})
 
-# --- Assign issue (Registrar only) ---
+# --- Assign issue (Registrar only)
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated, IsRegistrar])
 def assign_issue(request, issue_id):
@@ -174,7 +175,7 @@ def assign_issue(request, issue_id):
     issue.save()
     return Response({'message': 'Issue assigned successfully'})
 
-# --- Resolve issue (Registrar only) ---
+# --- Resolve issue (Registrar only)
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def resolve_issue(request, issue_id):
@@ -187,7 +188,7 @@ def resolve_issue(request, issue_id):
     issue.save()
     return Response({'message': 'Issue resolved successfully'})
 
-# Profile --- displays info related to the current user ---
+# Profile --- displays info related to the current user
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -200,3 +201,11 @@ def profile(request):
             'student_number': request.user.student_number,
             'department': request.user.department.name if request.user.department else None,
         })
+
+# Department List (for dropdown)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def department_list(request):
+    departments = Department.objects.all()
+    serializer = DepartmentSerializer(departments, many=True)
+    return Response(serializer.data)
