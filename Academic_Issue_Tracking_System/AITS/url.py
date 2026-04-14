@@ -11,6 +11,7 @@ from .views import (
     list_issues,
     issue_detail,
     edit_issue,
+    update_issue_status,
     withdraw_issue,
     department_list,
     registrar_all_issues,
@@ -48,6 +49,7 @@ urlpatterns = [
     #path('api/hod/issues/', hod_issues, name='hod-issues'),
     path('profile/', profile, name='profile'),
     path('submit_issue/', submit_issue, name='submit_issue'),
+    path('api/issues/update/<int:issue_id>/', update_issue_status, name='update-issue-status'),
 
     # Registrar
     path('api/registrar/dashboard/', registrar_dashboard,

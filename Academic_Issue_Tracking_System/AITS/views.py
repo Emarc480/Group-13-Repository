@@ -196,6 +196,31 @@ def update_issue_status(request, issue_id):
     return Response({'message': 'Issue status updated successfully'})
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_issue_status(request, issue_id):
+    try:
+        issue = Issue.objects.get(id=issue_id)
+
+        if issue.assigned_to != request.user and request.user.role != 'registrar':
+            return Response({'error': 'You do not have permission to update this issue'}, status=status.HTTP_403_FORBIDDEN)
+    except Issue.DoesNotExist:
+        return Response({'error': 'Issue not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    new_status = request.data.get('status')
+    if new_status not in ['open', 'in_progress', 'resolved']:
+        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+
+    issue.status = new_status
+    issue.save()
+    AuditLog.objects.create(
+        issue=issue,
+        performed_by=request.user,
+        action=f'Status updated to {new_status} by {request.user.role}'
+    )
+    return Response({'message': 'Issue status updated successfully'})
+
+
 # --- REGISTRAR VIEWS ---
 
 @api_view(['GET'])
