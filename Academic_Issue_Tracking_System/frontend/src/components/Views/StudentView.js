@@ -38,6 +38,17 @@ const StudentView = () => {
     const handleSubmit = () => {
         setSubmitSuccess(false);
         setSubmitError(null);
+
+        if (!form.course_code.trim()){
+            setSubmitError('Please enter a course code.');
+            return;
+        }
+        
+        if (!form.description.trim().length <20){
+            setSubmitError('Description must be at least 20 characters long.');
+            return;
+        }
+
         fetch('http://127.0.0.1:8000/api/student/issues/', {
             method: 'POST',
             headers: {
