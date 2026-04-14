@@ -9,7 +9,7 @@ const StudentView = () => {
         course_code: '',
         category: 'missing_marks',
         description: '',
-        department: 1,
+        department: '',
     });
     const [submitSuccess, setSubmitSuccess] = useState(false);
     const [submitError, setSubmitError] = useState(null);
@@ -35,10 +35,37 @@ const StudentView = () => {
         fetchDashboard();
     }, []);
 
+    const [departments, setDepartments] = useState([]);
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:8000/api/departments/', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+            .then(res => res.json())
+            .then(json => setDepartments(json))
+            .catch(() => console.error('Failed to load departments'));
+    }, []);
+
     const handleSubmit = () => {
         setSubmitSuccess(false);
         setSubmitError(null);
-        fetch('http://127.0.0.1:8000/api/student/submit_issue/', {
+
+        if (!form.course_code.trim()){
+            setSubmitError('Please enter a course code.');
+            return;
+        }
+
+        if (form.description.trim().length <20){
+            setSubmitError('Description must be at least 20 characters long.');
+            return;
+        }
+
+        if (!form.department){
+            setSubmitError('Please select a department.');
+            return;
+        }
+
+        fetch('http://127.0.0.1:8000/api/student/issues/', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -50,7 +77,7 @@ const StudentView = () => {
             .then(json => {
                 if (json.id) {
                     setSubmitSuccess(true);
-                    setForm({ course_code: '', category: 'missing_marks', description: '', department: 1 });
+                    setForm({ course_code: '', category: 'missing_marks', description: '', department: '' });
                     fetchDashboard();
                 } else {
                     setSubmitError('Failed to submit issue. Check your inputs.');
@@ -174,6 +201,22 @@ const StudentView = () => {
                                 <option value="correction">Correction</option>
                             </select>
                         </div>
+                        <div className="form-field">
+                            <label className="field-label">Department</label>
+                            <select
+                                className="field-input"
+                                value={form.department}
+                                onChange={e => setForm({ ...form, department: e.target.value })}
+                            >
+                                <option value="">Select a department</option>
+                                {departments.map(department => (
+                                    <option key={department.id} value={department.id}>
+                                        {department.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                     </div>
                     <div className="form-field">
                         <label className="field-label">Description</label>
