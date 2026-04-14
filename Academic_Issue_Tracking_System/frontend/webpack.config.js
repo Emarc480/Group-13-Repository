@@ -1,12 +1,20 @@
 const path = require("path");
 const webpack = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
     entry: "./src/index.js",
     output: {
         path: path.resolve(__dirname, "./static/frontend"),
         filename: "[name].js",
+        publicPath: "/static/frontend/",
     },
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: "./templates/frontend/index.html",
+            filename: "index.html",
+        }),
+    ],
     module: {
         rules: [
             {
@@ -28,6 +36,9 @@ module.exports = {
     },
     optimization: {
         minimize: true,
+    },
+    devServer: {
+        historyApiFallback: true,
     },
     //plugins: [
     //    new webpack.DefinePlugin({

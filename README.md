@@ -8,10 +8,10 @@
 - Hosting: Heroku / AWS
 
 ## Team Members.
-1. Ariko Joseph Ojangole:User Models
-2. OYURU ARNOLD HENRY:
-3. Opolot Emmanuel Markus: Authentication  
-4. MUKISA PERCY: Student Features  
+1. Ariko Joseph Ojangole.
+2. OYURU ARNOLD HENRY.
+3. Opolot Emmanuel Markus.  
+4. MUKISA PERCY.  
 
 
 ## How to run this project
