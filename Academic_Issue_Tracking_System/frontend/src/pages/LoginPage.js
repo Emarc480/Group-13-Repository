@@ -16,7 +16,7 @@ const LoginPage = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/login/', {
+            const response = await fetch('api/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -35,7 +35,7 @@ const LoginPage = () => {
                 localStorage.setItem('refresh', data.refresh);
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('username', data.username);
-                navigate('/home/dashboard/');
+                navigate('/dashboard');
             } else {
                 alert(data.error || 'Login failed. Please try again.');
             }
