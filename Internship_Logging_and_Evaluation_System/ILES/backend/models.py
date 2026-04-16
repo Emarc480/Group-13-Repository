@@ -18,3 +18,16 @@ class InternshipPlacement(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     workplace_supervisor = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='supervised_placements')
+
+class WeeklyLog(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('reviewed', 'Reviewed'),
+        ('approved', 'Approved'),
+    ]
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
+    week_number = models.PositiveIntegerField()
+    activities = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    submitted_at = models.DateTimeField(null=True, blank=True)
