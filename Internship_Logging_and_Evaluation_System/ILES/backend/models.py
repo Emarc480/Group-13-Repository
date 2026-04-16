@@ -31,3 +31,7 @@ class WeeklyLog(models.Model):
     activities = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(null=True, blank=True)
+
+class EvaluationCriteria(models.Model):
+    name = models.CharField(max_length=100)
+    weight = models.DecimalField(max_digits=5, decimal_places=2)
