@@ -35,3 +35,10 @@ class WeeklyLog(models.Model):
 class EvaluationCriteria(models.Model):
     name = models.CharField(max_length=100)
     weight = models.DecimalField(max_digits=5, decimal_places=2)
+
+class Evaluation(models.Model):
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
+    criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
+    score = models.DecimalField(max_digits=5, decimal_places=2)
+    evaluated_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    evaluated_at = models.DateTimeField(auto_now_add=True)
