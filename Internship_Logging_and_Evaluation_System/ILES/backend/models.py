@@ -22,7 +22,7 @@ class InternshipPlacement(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=models.Q(end_date__gt=models.F('start_date')),
+                condition=models.Q(end_date__gt=models.F('start_date')),
                 name='end_after_start'
             )]
         
