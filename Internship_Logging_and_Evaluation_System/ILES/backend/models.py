@@ -19,6 +19,13 @@ class InternshipPlacement(models.Model):
     end_date = models.DateField()
     workplace_supervisor = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='supervised_placements')
 
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(end_date__gt=models.F('start_date')),
+                name='end_after_start'
+            )]
+        
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
