@@ -39,6 +39,14 @@ class WeeklyLog(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        constraints =[
+            models.UniqueConstraint(
+                fields=['placement', 'week_number'],
+                name='unique log per placement week'
+            )
+        ]
+
 class EvaluationCriteria(models.Model):
     name = models.CharField(max_length=100)
     weight = models.DecimalField(max_digits=5, decimal_places=2)
