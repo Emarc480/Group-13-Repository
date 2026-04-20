@@ -14,9 +14,8 @@ class CustomUser(AbstractUser):
 
 
 class InternshipPlacement(models.Model):
-    student = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='placements')
-    student_no = models.IntegerField
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='placements')
+    student_no = models.CharField(max_length=20)
     company_name = models.CharField(max_length=45)
     start_date = models.DateField()
     end_date = models.DateField()
