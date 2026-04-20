@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'ILES.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': config('DB_NAME'),
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
