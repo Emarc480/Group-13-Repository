@@ -8,11 +8,11 @@ function Loginpage() {
 
   return (
     <>
-      <div className="Header">
-        <h2>Login</h2>
-      </div>
       {showLogin ? (
         <div className="loginForm">
+          <div className="Header">
+            <h2>Login</h2>
+          </div>
           <form>
             <div>
               <U />
@@ -37,6 +37,9 @@ function Loginpage() {
         </div >
       ) : (
         <div className="SignUpForm">
+          <div className="Header">
+            <h2>Sign Up</h2>
+          </div>
           <form>
             <div>
               <U />
