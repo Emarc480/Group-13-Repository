@@ -7,7 +7,7 @@ export const login = async (username, password) => {
     if (response.data.access) {
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
-        // We'll also need to decode the token or hit a /me endpoint to get the role
+
     }
     return response.data;
 };
@@ -35,5 +35,5 @@ export const logout = () => {
 };
 
 export const isAuthenticated = () => {
-    return !!localStorage.getItem('token');
+    return !!localStorage.getItem('access_token');
 };
