@@ -12,6 +12,15 @@ export const login = async (username, password) => {
     return response.data;
 };
 
+export const register = async (userData) => {
+    const response = await axios.post(`${API_URL}auth/register/`, userData);
+    if (response.data.access) {
+        localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
+    }
+    return response.data;
+};
+
 export const isAuthenticated = () => {
     return !!localStorage.getItem('token');
 };
