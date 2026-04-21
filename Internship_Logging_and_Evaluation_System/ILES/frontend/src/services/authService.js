@@ -29,6 +29,11 @@ export const getMe = async () => {
     return response.data;
 };
 
+export const logout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+};
+
 export const isAuthenticated = () => {
     return !!localStorage.getItem('token');
 };
