@@ -20,8 +20,6 @@ from rest_framework import permissions
 
 class IsOwnerOrSupervisor(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        # Academic and Workplace Supervisors can view/edit
-        if request.user.role in ['ACADEMIC_SUP', 'WORKPLACE_SUP']:
+        if request.user.role in ['academic_supervisor', 'workplace_supervisor']:
             return True
-        # Students can only see/edit their own logs
         return obj.placement.student == request.user
