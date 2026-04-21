@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = ({ allowedRoles, userRole }) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
 
     // 1. Check if logged in
     if (!token) {
