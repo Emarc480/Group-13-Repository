@@ -37,19 +37,19 @@ class RegisterView(generics.CreateAPIView):
 class InternshipPlacementViewset(viewsets.ModelViewSet):
     queryset = InternshipPlacement.objects.all()
     serializer_class = InternshipPlacementSerializer
-    permission_classes = IsInternAdmin
+    permission_classes = [IsInternAdmin]
 
 class WeeklyLogViewset(viewsets.ModelViewSet):
-    queryset = WeeklyLog
+    queryset = WeeklyLog.objects.all()
     serializer_class = WeeklyLogSerializer
-    permission_classes = IsStudent
+    permission_classes = [IsStudent]
 
 class EvaluationViewset(viewsets.ModelViewSet):
-    queryset = Evaluation
+    queryset = Evaluation.objects.all()
     serializer_class = EvaluationSerializer
     permission_classes = [ IsStudent | IsAcademicSupervisor]
 
 class EvaluationCriteriaViewset(viewsets.ModelViewSet):
-    queryset = EvaluationCriteria
+    queryset = EvaluationCriteria.objects.all()
     serializer_class = EvaluationCriteriaSerializer
     permission_classes = [IsInternAdmin | IsAcademicSupervisor]
