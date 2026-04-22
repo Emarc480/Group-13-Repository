@@ -1,33 +1,53 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 class User(AbstractUser):
-    ROLE_CHOICES = (
+    ROLE_CHOICES = [
         ('STUDENT', 'Student'),
-        ('WORKPLACE_SUP', 'Workplace Supervisor'),
-        ('ACADEMIC_SUP', 'Academic Supervisor'),
-        ('COORDINATOR', 'Internship Coordinator'),
-    )
+        ('WORKPLACE_SUPERVISOR', 'Workplace Supervisor'),
+        ('ACADEMIC_SUPERVISOR', 'Academic Supervisor'),
+        ('ADMIN', 'Internship Administrator'),
+    ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
 
 class InternshipPlacement(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='placements')
-    company_name = models.CharField(max_length=200)
+    organization_name = models.CharField(max_length=255, default="Pending") 
+    supervisor_name = models.CharField(max_length=255, default="TBD")
     start_date = models.DateField()
     end_date = models.DateField()
 
+    def __str__(self):
+        return f"{self.student.username} at {self.organization_name}"
+
 class WeeklyLog(models.Model):
-    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE, related_name='logs')
-    week_number = models.PositiveIntegerField()
-    activities = models.TextField()
+    STATUS_CHOICES = [
+        ('DRAFT', 'Draft'),
+        ('SUBMITTED', 'Submitted'),
+        ('REVIEWED', 'Reviewed'),
+        ('APPROVED', 'Approved'),
+    ]
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
+    week_number = models.IntegerField()
+    content = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
+    # Changed auto_now_add to default=timezone.now to fix the migration error
+    created_at = models.DateTimeField(default=timezone.now) 
     is_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Week {self.week_number} - {self.placement.student.username}"
 
 class EvaluationCriteria(models.Model):
     name = models.CharField(max_length=100)
-    max_score = models.IntegerField(default=10)
+    max_score = models.IntegerField()
+
+    def __str__(self):
+        return self.name
 
 class Evaluation(models.Model):
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
-    evaluator = models.ForeignKey(User, on_delete=models.CASCADE)
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
     score = models.IntegerField()
+    comments = models.TextField(blank=True, null=True)
