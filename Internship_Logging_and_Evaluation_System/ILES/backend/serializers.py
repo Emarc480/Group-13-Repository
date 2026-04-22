@@ -19,6 +19,9 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
         model = InternshipPlacement
         fields = '__all__'
 
+    def validate(self, data):
+        return data
+
 class WeeklyLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeeklyLog
