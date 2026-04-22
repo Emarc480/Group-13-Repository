@@ -4,24 +4,37 @@ from .models import User, InternshipPlacement, WeeklyLog, Evaluation, Evaluation
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'role']
-
-class WeeklyLogSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WeeklyLog
-        fields = '__all__'
+        fields = ['id', 'username', 'email', 'role']
 
 class InternshipPlacementSerializer(serializers.ModelSerializer):
+    student_username = serializers.ReadOnlyField(source='student.username')
+
     class Meta:
         model = InternshipPlacement
-        fields = '__all__'
+        fields = [
+            'id', 'student', 'student_username', 'organization_name', 
+            'supervisor_name', 'start_date', 'end_date'
+        ]
 
-class EvaluationSerializer(serializers.ModelSerializer):
+class WeeklyLogSerializer(serializers.ModelSerializer):
+    student_name = serializers.ReadOnlyField(source='placement.student.username')
+    organization = serializers.ReadOnlyField(source='placement.organization_name')
+
     class Meta:
-        model = Evaluation
-        fields = '__all__'
+        model = WeeklyLog
+        fields = [
+            'id', 'placement', 'student_name', 'organization', 
+            'week_number', 'content', 'status', 'created_at', 'is_verified'
+        ]
 
 class EvaluationCriteriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = EvaluationCriteria
-        fields = '__all__'
+        fields = ['id', 'name', 'max_score']
+
+class EvaluationSerializer(serializers.ModelSerializer):
+    criteria_name = serializers.ReadOnlyField(source='criteria.name')
+
+    class Meta:
+        model = Evaluation
+        fields = ['id', 'placement', 'criteria', 'criteria_name', 'score', 'comments']
