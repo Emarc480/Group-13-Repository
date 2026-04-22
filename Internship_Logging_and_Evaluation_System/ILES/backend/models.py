@@ -32,7 +32,7 @@ class WeeklyLog(models.Model):
     week_number = models.IntegerField()
     content = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
-    # Changed auto_now_add to default=timezone.now to fix the migration error
+    
     created_at = models.DateTimeField(default=timezone.now) 
     is_verified = models.BooleanField(default=False)
 
