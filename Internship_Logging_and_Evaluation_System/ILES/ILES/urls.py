@@ -17,8 +17,38 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
+
+# Import your custom views and serializer logic
+from rest_framework_simplejwt.views import TokenObtainPairView
+from backend.serializers import MyTokenObtainPairSerializer
+from backend.views import (
+    InternshipPlacementViewset, 
+    WeeklyLogViewset, 
+    EvaluationViewset, 
+    EvaluationCriteriaViewset
+)
+
+# Define the custom Token View to use our Role-aware Serializer
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+# Register API routes
+router = DefaultRouter()
+router.register(r'placements', InternshipPlacementViewset, basename='placement')
+router.register(r'logs', WeeklyLogViewset, basename='logs')
+router.register(r'evaluations', EvaluationViewset, basename='evaluations')
+router.register(r'criteria', EvaluationCriteriaViewset, basename='criteria')
 
 urlpatterns = [
+    # Admin Interface
     path('admin/', admin.site.urls),
-    path('api/', include('backend.urls')),
+
+    # Authentication Endpoints (Week 4 Task)
+    path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # Resource Endpoints
+    path('api/', include(router.urls)),
 ]
