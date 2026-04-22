@@ -1,6 +1,26 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
 
+# --- WEEK 4: JWT & RBAC LOGIC ---
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        # Add custom claims into the encrypted token
+        token['role'] = user.role
+        token['username'] = user.username
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # Add extra data to the plain-text response for React to store in localStorage
+        data['role'] = self.user.role
+        data['username'] = self.user.username
+        data['id'] = self.user.id
+        return data
+
+# --- MODEL SERIALIZERS ---
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
