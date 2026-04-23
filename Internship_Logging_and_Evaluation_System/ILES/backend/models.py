@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 # Create your models here.
 
 
@@ -14,9 +15,8 @@ class CustomUser(AbstractUser):
 
 
 class InternshipPlacement(models.Model):
-    student = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='placements')
-    student_no = models.CharField(max_length=20)
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='placements')
+    student_no = models.CharField(default=0)
     company_name = models.CharField(max_length=45)
     start_date = models.DateField()
     end_date = models.DateField()
@@ -29,6 +29,10 @@ class InternshipPlacement(models.Model):
                 condition=models.Q(end_date__gt=models.F('start_date')),
                 name='end_after_start'
             )]
+        
+    def clean(self):
+        if self.start_date > self.end_date:
+            raise ValidationError("start date cannot be greater than end date")
 
 
 class WeeklyLog(models.Model):
