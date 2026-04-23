@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from datetime import timedelta
 
 class User(AbstractUser):
     ROLE_CHOICES = [
@@ -47,7 +48,6 @@ class WeeklyLog(models.Model):
     STATUS_CHOICES = [
         ('DRAFT', 'Draft'),
         ('SUBMITTED', 'Submitted'),
-        ('REVIEWED', 'Reviewed'),
         ('APPROVED', 'Approved'),
     ]
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
@@ -59,6 +59,21 @@ class WeeklyLog(models.Model):
 
     class Meta:
         unique_together = ('placement', 'week_number')
+
+    def clean(self):
+        if self.pk:
+            original = WeeklyLog.objects.get(pk=self.pk)
+            if original.status == 'APPROVED':
+                raise ValidationError("Cannot edit log after approval.")
+
+        if self.status == 'SUBMITTED':
+            deadline = self.placement.start_date + timedelta(weeks=self.week_number) + timedelta(days=7)
+            if timezone.now().date() > deadline:
+                raise ValidationError("Submission deadline has passed.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Week {self.week_number} - {self.placement.student.username}"
