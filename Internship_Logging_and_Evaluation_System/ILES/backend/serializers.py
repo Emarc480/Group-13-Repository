@@ -39,6 +39,7 @@ class EvaluationCriteriaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
