@@ -1,24 +1,19 @@
-# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-db.sqlite3
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Environments
 .env
 .venv
 env/
 venv/
 ENV/
-
-# IDEs
 .vscode/
 .idea/
-
-# OS
 .DS_Store
 Thumbs.db
+.pytest_cache/
+.coverage
+htmlcov/
+node_modules/
+dist/
+build/
