@@ -1,19 +1,40 @@
+# Environment variables
+.env
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.env
-.venv
+.Python
+*.egg-info/
+
+# Virtual environment
+.venv/
 env/
 venv/
 ENV/
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Build and Distribution
+dist/
+build/
+node_modules/
+
+# IDEs and Editors
 .vscode/
 .idea/
+
+# System Files
 .DS_Store
 Thumbs.db
+
+# Testing and Coverage
 .pytest_cache/
 .coverage
 htmlcov/
-node_modules/
-dist/
-build/

@@ -1,14 +1,13 @@
 from django.contrib import admin
-from .models import User, InternshipPlacement, WeeklyLog, EvaluationCriteria, Evaluation
+from .models import CustomUser, InternshipPlacement, WeeklyLog, EvaluationCriteria, Evaluation
 
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+@admin.register(CustomUser)
+class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'role', 'is_staff')
     list_filter = ('role',)
 
 @admin.register(InternshipPlacement)
 class PlacementAdmin(admin.ModelAdmin):
-    # Ensure these names match your models.py exactly
     list_display = ('student', 'organization_name', 'supervisor_name') 
     search_fields = ('organization_name', 'student__username')
 
