@@ -22,10 +22,7 @@ function Loginpage() {
       const loginResponse = await login(loginData.username, loginData.password);
       const user = await getMe();
       const role = user.role;
-      if (role === 'student') navigate('/dashboard/student');
-      else if (role === 'workplace_supervisor') navigate('/dashboard/supervisor');
-      else if (role === 'academic_supervisor') navigate('/dashboard/academic');
-      else if (role === 'intern_admin') navigate('/dashboard/admin');
+      navigate('/dashboard');
     } catch (err) {
       setError('Invalid username or password.');
     } finally {
@@ -44,7 +41,7 @@ function Loginpage() {
     try {
       const { confirmPassword, ...userData } = registerData;
       await register(userData);
-      navigate('/dashboard/student');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.username?.[0] || 'Registration failed.');
     } finally {
