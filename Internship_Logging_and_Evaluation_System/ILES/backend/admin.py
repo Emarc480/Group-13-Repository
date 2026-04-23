@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import User, InternshipPlacement, WeeklyLog, EvaluationCriteria, Evaluation
+from .models import CustomUser, InternshipPlacement, WeeklyLog, EvaluationCriteria, Evaluation
 
-admin.site.register(User)
+admin.site.register(CustomUser)
 admin.site.register(InternshipPlacement)
 admin.site.register(WeeklyLog)
 admin.site.register(EvaluationCriteria)
