@@ -1,4 +1,5 @@
 import ProtectedRoute from './components/ProtectedRoute'
+import InternshipPlacementForm from './components/InternshipPlacementForm'
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Loginpage from './pages/Loginpage'
@@ -16,6 +17,7 @@ function App() {
           <Route path='/dashboard/supervisor' element={<Dashboard />} />
           <Route path='/dashboard/academic' element={<Dashboard />} />
           <Route path='/dashboard/admin' element={<Dashboard />} />
+          <Route path='/placements' element={<InternshipPlacementForm/>}/>
         </Route>
       </Routes>
     </Router>
