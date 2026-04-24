@@ -8,33 +8,21 @@ __pycache__/
 *.pyd
 .Python
 *.egg-info/
+dist/
+build/
 
 # Virtual environment
 .venv/
 env/
 venv/
-ENV/
 
 # Django
 *.log
 db.sqlite3
 media/
-staticfiles/
 
-# Build and Distribution
-dist/
-build/
-node_modules/
-
-# IDEs and Editors
+# VS Code
 .vscode/
-.idea/
 
-# System Files
+# Mac
 .DS_Store
-Thumbs.db
-
-# Testing and Coverage
-.pytest_cache/
-.coverage
-htmlcov/

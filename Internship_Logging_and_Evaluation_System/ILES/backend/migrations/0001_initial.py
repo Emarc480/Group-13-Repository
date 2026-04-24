@@ -7,6 +7,7 @@ import django.utils.timezone
 from django.conf import settings
 from django.db import migrations, models
 
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -21,8 +22,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
-                ('max_score', models.IntegerField(default=10)),
-                ('weight', models.DecimalField(decimal_places=2, max_digits=5, default=1.0)),
+                ('weight', models.DecimalField(decimal_places=2, max_digits=5)),
             ],
         ),
         migrations.CreateModel(
@@ -39,8 +39,8 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('role', models.CharField(choices=[('student', 'Student_Intern'), ('workplace_supervisor', 'Workplace_Supervisor'), ('academic_supervisor', 'Academic_Supervisor'), ('intern_admin', 'Internship_Administrator')], default='student', max_length=30)),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
+                ('role', models.CharField(choices=[('student', 'Student_Intern'), ('workplace_supervisor', 'Workplace_Supervisor'), ('academic_supervisor', 'Academic_Supervisor'), ('intern_admin', 'Internship_Administrator')], max_length=30)),
+                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
             ],
             options={
@@ -56,24 +56,12 @@ class Migration(migrations.Migration):
             name='InternshipPlacement',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('student_no', models.CharField(max_length=20, blank=True, null=True)),
-                ('company_name', models.CharField(max_length=200)),
+                ('student_no', models.CharField(max_length=20)),
+                ('company_name', models.CharField(max_length=45)),
                 ('start_date', models.DateField()),
                 ('end_date', models.DateField()),
                 ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='placements', to=settings.AUTH_USER_MODEL)),
                 ('workplace_supervisor', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='supervised_placements', to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='WeeklyLog',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('week_number', models.PositiveIntegerField()),
-                ('activities', models.TextField()),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('submitted', 'Submitted'), ('reviewed', 'Reviewed'), ('approved', 'Approved')], default='draft', max_length=20)),
-                ('is_verified', models.BooleanField(default=False)),
-                ('submitted_at', models.DateTimeField(blank=True, null=True)),
-                ('placement', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='logs', to='backend.internshipplacement')),
             ],
         ),
         migrations.CreateModel(
@@ -84,6 +72,17 @@ class Migration(migrations.Migration):
                 ('evaluated_at', models.DateTimeField(auto_now_add=True)),
                 ('evaluated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
                 ('criteria', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='backend.evaluationcriteria')),
+                ('placement', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='backend.internshipplacement')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='WeeklyLog',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('week_number', models.PositiveIntegerField()),
+                ('activities', models.TextField()),
+                ('status', models.CharField(choices=[('draft', 'Draft'), ('submitted', 'Submitted'), ('reviewed', 'Reviewed'), ('approved', 'Approved')], default='draft', max_length=20)),
+                ('submitted_at', models.DateTimeField(blank=True, null=True)),
                 ('placement', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='backend.internshipplacement')),
             ],
         ),
