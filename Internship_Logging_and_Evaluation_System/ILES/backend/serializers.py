@@ -24,6 +24,13 @@ class WeeklyLogSerializer(serializers.ModelSerializer):
         model = WeeklyLog
         fields = '__all__'
 
+    def update(self, instance, validated_data):
+        if instance.status == 'approved':
+            raise serializers.ValidationError(
+                    "Cannot update a log that has been approved."
+                    )
+        return super().update(instance, validated_data)
+
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evaluation
