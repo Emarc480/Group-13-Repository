@@ -57,8 +57,16 @@ class InternshipPlacementViewset(viewsets.ModelViewSet):
 class WeeklyLogViewset(viewsets.ModelViewSet):
     queryset = WeeklyLog.objects.all()
     serializer_class = WeeklyLogSerializer
-    permission_classes = [IsStudent | IsWorkplaceSupervisor | IsAcademicSupervisor | IsInternAdmin]
-
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'submit', 'recall']:
+            return [IsStudent()]
+        elif self.action in ['list', 'retrieve']:
+            return [IsStudent() | IsWorkplaceSupervisor() | IsAcademicSupervisor() | IsInternAdmin()]
+        elif self.action == 'destroy':
+            return [IsInternAdmin()]
+        return [IsInternAdmin()]
+        
     def get_queryset(self):
         user = self.request.user
         if user.role == 'student':
