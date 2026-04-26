@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
+from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, CustomUser
 from django.contrib.auth.password_validation import validate_password
-from .models import CustomUser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.core.exceptions import ValidationError
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
@@ -21,6 +21,14 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
+        instance = InternshipPlacement(**data)
+        if self.instance:
+            instance.pk = self.instance.pk
+        
+        try:
+            instance.clean()
+        except ValidationError as e:
+            raise serializers.ValidationError(e.message_dict if hasattr(e, 'message_dict') else e.message)
         return data
 
 class WeeklyLogSerializer(serializers.ModelSerializer):
@@ -30,9 +38,7 @@ class WeeklyLogSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         if instance.status == 'approved':
-            raise serializers.ValidationError(
-                    "Cannot update a log that has been approved."
-                    )
+            raise serializers.ValidationError("Cannot update a log that has been approved.")
         return super().update(instance, validated_data)
     
     def validate(self, data):
@@ -61,8 +67,6 @@ class EvaluationCriteriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = EvaluationCriteria
         fields = '__all__'
-
-
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
