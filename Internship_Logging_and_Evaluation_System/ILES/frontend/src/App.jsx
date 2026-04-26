@@ -1,4 +1,4 @@
-import ProtectedRoute from './components/ProtectedRoute'
+import ProtectedRoute from './services/ProtectedRoute'
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Loginpage from './pages/Loginpage'
@@ -11,11 +11,8 @@ function App() {
       <Routes>
         <Route path='/' element={<Homepage />} />
         <Route path='/login' element={<Loginpage />} />
-        <Route element={<ProtectedRoute />}>
-          <Route path='/dashboard/student' element={<Dashboard />} />
-          <Route path='/dashboard/supervisor' element={<Dashboard />} />
-          <Route path='/dashboard/academic' element={<Dashboard />} />
-          <Route path='/dashboard/admin' element={<Dashboard />} />
+        <Route path='/dashboard' element={<ProtectedRoute />} >
+          <Route index element={<Dashboard />} />
         </Route>
       </Routes>
     </Router>
