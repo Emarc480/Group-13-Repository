@@ -1,8 +1,9 @@
 from django.shortcuts import render
+from django.utils import timezone
 from rest_framework import viewsets, generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
 from .permissions import IsStudent, IsInternAdmin, IsWorkplaceSupervisor, IsAcademicSupervisor
@@ -67,6 +68,18 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         elif user.role == 'intern_admin':
             return WeeklyLog.objects.all()
         return WeeklyLog.objects.none()
+    @action(detail=True, methods=['post'])
+    def submit(self, request, pk=None):
+        weekly_log = self.get_object()
+        if weekly_log.status != 'draft':
+            return Response(
+                {'error': 'Only draft logs can be submitted.'},
+                status=status.HTTP_400_BAD_REQUEST)
+        weekly_log.status = 'submitted'
+        weekly_log.submitted_at = timezone.now()
+        weekly_log.save()
+        return Response({'message': f'Weekly log {weekly_log.week_number} submitted successfully.'},
+                        status=status.HTTP_200_OK)
 
 class EvaluationViewset(viewsets.ModelViewSet):
     queryset = Evaluation.objects.all()
