@@ -68,6 +68,7 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         elif user.role == 'intern_admin':
             return WeeklyLog.objects.all()
         return WeeklyLog.objects.none()
+    
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
         weekly_log = self.get_object()
@@ -79,6 +80,26 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         weekly_log.submitted_at = timezone.now()
         weekly_log.save()
         return Response({'message': f'Weekly log {weekly_log.week_number} submitted successfully.'},
+                        status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['post'])
+    def recall(self, request, pk=None);
+        Weekly_log = self.get_object()
+
+        if weekly_log.status != 'submitted':
+            return Response(
+                {'error': 'Only submitted logs can be recalled.'},
+                status=status.HTTP_400_BAD_REQUEST)
+        
+        if Weekly_log.placement.student != request.user:
+            return Response(
+                {'error': 'You can only recall your own submitted logs.'},
+                status=status.HTTP_403_FORBIDDEN)
+        
+        weekly_log.status = 'draft'
+        weekly_log.submitted_at = None
+        weekly_log.save()
+        return Response({'message': f'Weekly log {weekly_log.week_number} recalled successfully.'},
                         status=status.HTTP_200_OK)
 
 class EvaluationViewset(viewsets.ModelViewSet):
