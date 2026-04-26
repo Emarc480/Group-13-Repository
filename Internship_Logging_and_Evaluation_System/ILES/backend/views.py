@@ -83,15 +83,15 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
                         status=status.HTTP_200_OK)
     
     @action(detail=True, methods=['post'])
-    def recall(self, request, pk=None);
-        Weekly_log = self.get_object()
+    def recall(self, request, pk=None):
+        weekly_log = self.get_object()
 
         if weekly_log.status != 'submitted':
             return Response(
                 {'error': 'Only submitted logs can be recalled.'},
                 status=status.HTTP_400_BAD_REQUEST)
         
-        if Weekly_log.placement.student != request.user:
+        if weekly_log.placement.student != request.user:
             return Response(
                 {'error': 'You can only recall your own submitted logs.'},
                 status=status.HTTP_403_FORBIDDEN)
