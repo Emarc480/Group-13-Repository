@@ -30,6 +30,23 @@ class WeeklyLogSerializer(serializers.ModelSerializer):
                     "Cannot update a log that has been approved."
                     )
         return super().update(instance, validated_data)
+    
+    def validate(self, data):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        if data.get('status') == 'submitted':
+            placement = data.get('placement') or self.instance.placement
+            week_number = data.get('week_number') or self.instance.week_number
+
+            week_start = placement.start_date + timedelta(weeks=week_number - 1)
+            deadline = week_start + timedelta(days=7)
+
+            if timezone.now().date() > deadline:
+                raise serializers.ValidationError(
+                        f"Submission deadline for week {week_number} has passed. Deadline was {deadline}."
+                        )
+        return data
 
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
