@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-# Create your models here.
-
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -13,10 +11,9 @@ class CustomUser(AbstractUser):
     ]
     role = models.CharField(max_length=30, choices=ROLE_CHOICES)
 
-
 class InternshipPlacement(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='placements')
-    student_no = models.CharField(default=0)
+    student_no = models.CharField(max_length=20)
     company_name = models.CharField(max_length=45)
     start_date = models.DateField()
     end_date = models.DateField()
@@ -28,12 +25,29 @@ class InternshipPlacement(models.Model):
             models.CheckConstraint(
                 condition=models.Q(end_date__gt=models.F('start_date')),
                 name='end_after_start'
-            )]
+            )
+        ]
         
     def clean(self):
-        if self.start_date > self.end_date:
-            raise ValidationError("start date cannot be greater than end date")
+        if self.start_date and self.end_date:
+            if self.start_date > self.end_date:
+                raise ValidationError("Start date cannot be greater than end date")
 
+            overlapping = InternshipPlacement.objects.filter(
+                student=self.student,
+                start_date__lt=self.end_date,
+                end_date__gt=self.start_date
+            ).exclude(pk=self.pk)
+
+            if overlapping.exists():
+                raise ValidationError(
+                    f"Conflicting placement: This student is already assigned from "
+                    f"{overlapping.first().start_date} to {overlapping.first().end_date}."
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
@@ -58,11 +72,9 @@ class WeeklyLog(models.Model):
             )
         ]
 
-
 class EvaluationCriteria(models.Model):
     name = models.CharField(max_length=100)
     weight = models.DecimalField(max_digits=5, decimal_places=2)
-
 
 class Evaluation(models.Model):
     placement = models.ForeignKey(
