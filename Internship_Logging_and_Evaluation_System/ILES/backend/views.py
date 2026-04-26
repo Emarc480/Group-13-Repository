@@ -62,7 +62,8 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update', 'submit', 'recall']:
             return [IsStudent()]
         elif self.action in ['list', 'retrieve']:
-            return [IsStudent() | IsWorkplaceSupervisor() | IsAcademicSupervisor() | IsInternAdmin()]
+            from rest_framework.permissions import IsAuthenticated
+            return [IsAuthenticated()]
         elif self.action == 'destroy':
             return [IsInternAdmin()]
         return [IsInternAdmin()]
