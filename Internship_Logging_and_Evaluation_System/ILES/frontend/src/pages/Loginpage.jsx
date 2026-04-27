@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User as U, KeyRound as KR, Mail, LockKeyhole as LK } from 'lucide-react';
+import { User as U, KeyRound as KR, Mail, LockKeyhole as LK, Gavel } from 'lucide-react';
 import { getMe, login, register } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 
@@ -132,6 +132,7 @@ function Loginpage() {
               />
             </div>
             <div>
+              <Gavel />
               <select
                 value={registerData.role}
                 onChange={(e) => setRegisterData({ ...registerData, role: e.target.value })}
