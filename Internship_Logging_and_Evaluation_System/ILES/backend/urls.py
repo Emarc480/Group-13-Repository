@@ -9,7 +9,7 @@ from .views import (
     WeeklyLogViewset,
     EvaluationViewset,
     EvaluationCriteriaViewset,
-    )
+)
 
 router = DefaultRouter()
 router.register(r'placements', InternshipPlacementViewset)
@@ -19,9 +19,8 @@ router.register(r'criteria', EvaluationCriteriaViewset)
 
 urlpatterns = [
     path('auth/register/', RegisterView.as_view(), name='register'),
-    # path('auth/login/', TokenObtainPairView.as_view(), name='login'),
-    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/login/', CustomTokenObtainPairView.as_view(), name='login'),
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/me/', me, name='me'),
     path('', include(router.urls)),
 ]
