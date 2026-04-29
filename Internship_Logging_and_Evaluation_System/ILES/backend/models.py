@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-# Create your models here.
-
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -13,10 +11,9 @@ class CustomUser(AbstractUser):
     ]
     role = models.CharField(max_length=30, choices=ROLE_CHOICES)
 
-
 class InternshipPlacement(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='placements')
-    student_no = models.CharField(default=0)
+    student_no = models.CharField(default="0", max_length=20)
     company_name = models.CharField(max_length=45)
     start_date = models.DateField()
     end_date = models.DateField()
@@ -28,12 +25,28 @@ class InternshipPlacement(models.Model):
             models.CheckConstraint(
                 condition=models.Q(end_date__gt=models.F('start_date')),
                 name='end_after_start'
-            )]
-        
-    def clean(self):
-        if self.start_date > self.end_date:
-            raise ValidationError("start date cannot be greater than end date")
+            )
+        ]
 
+    def clean(self):
+        if self.start_date and self.end_date:
+            if self.start_date > self.end_date:
+                raise ValidationError("Start date cannot be greater than end date.")
+
+            overlapping_placements = InternshipPlacement.objects.filter(
+                student=self.student,
+                start_date__lte=self.end_date,
+                end_date__gte=self.start_date
+            ).exclude(pk=self.pk)
+
+            if overlapping_placements.exists():
+                raise ValidationError(
+                    "This student already has an internship placement that overlaps with these dates."
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
@@ -42,33 +55,27 @@ class WeeklyLog(models.Model):
         ('reviewed', 'Reviewed'),
         ('approved', 'Approved'),
     ]
-    placement = models.ForeignKey(
-        InternshipPlacement, on_delete=models.CASCADE)
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
     week_number = models.PositiveIntegerField()
     activities = models.TextField()
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default='draft')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=['placement', 'week_number'],
-                name='unique log per placement week'
+                name='unique_log_per_placement_week'
             )
         ]
-
 
 class EvaluationCriteria(models.Model):
     name = models.CharField(max_length=100)
     weight = models.DecimalField(max_digits=5, decimal_places=2)
 
-
 class Evaluation(models.Model):
-    placement = models.ForeignKey(
-        InternshipPlacement, on_delete=models.CASCADE)
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2)
-    evaluated_by = models.ForeignKey(
-        CustomUser, on_delete=models.SET_NULL, null=True)
+    evaluated_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
     evaluated_at = models.DateTimeField(auto_now_add=True)
