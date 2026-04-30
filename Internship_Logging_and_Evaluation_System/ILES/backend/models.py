@@ -13,7 +13,7 @@ class CustomUser(AbstractUser):
 
 class InternshipPlacement(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='placements')
-    student_no = models.CharField(max_length=20)
+    student_no = models.CharField(default="0", max_length=20)
     company_name = models.CharField(max_length=45)
     start_date = models.DateField()
     end_date = models.DateField()
@@ -27,22 +27,21 @@ class InternshipPlacement(models.Model):
                 name='end_after_start'
             )
         ]
-        
+
     def clean(self):
         if self.start_date and self.end_date:
             if self.start_date > self.end_date:
-                raise ValidationError("Start date cannot be greater than end date")
+                raise ValidationError("Start date cannot be greater than end date.")
 
-            overlapping = InternshipPlacement.objects.filter(
+            overlapping_placements = InternshipPlacement.objects.filter(
                 student=self.student,
-                start_date__lt=self.end_date,
-                end_date__gt=self.start_date
+                start_date__lte=self.end_date,
+                end_date__gte=self.start_date
             ).exclude(pk=self.pk)
 
-            if overlapping.exists():
+            if overlapping_placements.exists():
                 raise ValidationError(
-                    f"Conflicting placement: This student is already assigned from "
-                    f"{overlapping.first().start_date} to {overlapping.first().end_date}."
+                    "This student already has an internship placement that overlaps with these dates."
                 )
 
     def save(self, *args, **kwargs):
@@ -56,19 +55,17 @@ class WeeklyLog(models.Model):
         ('reviewed', 'Reviewed'),
         ('approved', 'Approved'),
     ]
-    placement = models.ForeignKey(
-        InternshipPlacement, on_delete=models.CASCADE)
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
     week_number = models.PositiveIntegerField()
     activities = models.TextField()
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default='draft')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=['placement', 'week_number'],
-                name='unique log per placement week'
+                name='unique_log_per_placement_week'
             )
         ]
 
@@ -77,10 +74,8 @@ class EvaluationCriteria(models.Model):
     weight = models.DecimalField(max_digits=5, decimal_places=2)
 
 class Evaluation(models.Model):
-    placement = models.ForeignKey(
-        InternshipPlacement, on_delete=models.CASCADE)
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2)
-    evaluated_by = models.ForeignKey(
-        CustomUser, on_delete=models.SET_NULL, null=True)
+    evaluated_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
     evaluated_at = models.DateTimeField(auto_now_add=True)

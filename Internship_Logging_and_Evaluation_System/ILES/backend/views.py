@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
 from .permissions import IsStudent, IsInternAdmin, IsWorkplaceSupervisor, IsAcademicSupervisor
 from .serializers import (
@@ -15,7 +16,6 @@ from .serializers import (
     EvaluationCriteriaSerializer,
     CustomTokenObtainPairSerializer
 )
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -129,13 +129,7 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
 class EvaluationViewset(viewsets.ModelViewSet):
     queryset = Evaluation.objects.all()
     serializer_class = EvaluationSerializer
-    permission_classes = [IsAuthenticated, IsAcademicSupervisor | IsInternAdmin | IsStudent]
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.role == 'student':
-            return Evaluation.objects.filter(placement__student=user)
-        return Evaluation.objects.all()
+    permission_classes = [IsStudent | IsAcademicSupervisor]
 
 class EvaluationCriteriaViewset(viewsets.ModelViewSet):
     queryset = EvaluationCriteria.objects.all()

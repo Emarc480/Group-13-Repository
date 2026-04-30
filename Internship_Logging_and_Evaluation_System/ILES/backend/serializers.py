@@ -21,14 +21,29 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        instance = InternshipPlacement(**data)
-        if self.instance:
-            instance.pk = self.instance.pk
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        student = data.get('student')
         
-        try:
-            instance.clean()
-        except ValidationError as e:
-            raise serializers.ValidationError(e.message_dict if hasattr(e, 'message_dict') else e.message)
+        instance = self.instance
+
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError({"end_date": "End date must be after start date."})
+
+        query = InternshipPlacement.objects.filter(
+            student=student,
+            start_date__lte=end_date,
+            end_date__gte=start_date
+        )
+
+        if instance:
+            query = query.exclude(pk=instance.pk)
+
+        if query.exists():
+            raise serializers.ValidationError(
+                "This student already has an internship placement that overlaps with these dates."
+            )
+
         return data
 
 class WeeklyLogSerializer(serializers.ModelSerializer):
@@ -71,5 +86,5 @@ class EvaluationCriteriaSerializer(serializers.ModelSerializer):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        data['role'] = self.user.role
+        data['role'] = self.user.role or "No Role Assigned"
         return data

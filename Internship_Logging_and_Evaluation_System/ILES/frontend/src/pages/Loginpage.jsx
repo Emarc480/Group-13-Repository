@@ -1,111 +1,167 @@
 import React, { useState } from "react";
+import { User as U, KeyRound as KR, Mail, LockKeyhole as LK, Gavel } from 'lucide-react';
+import { getMe, login, register } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { User, KeyRound, Mail, LockKeyhole } from 'lucide-react';
 
-const LoginPage = () => {
-    const [showLogin, setShowLogin] = useState(true);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+function Loginpage() {
+  const [showLogin, setShowLogin] = React.useState(true);
+  const navigate = useNavigate();
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [registerData, setRegisterData] = useState({
+    username: '', email: '', password: '', confirmPassword: '',
+    role: 'student', first_name: '', last_name: ''
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-    const [loginData, setLoginData] = useState({ username: '', password: '' });
-    const [registerData, setRegisterData] = useState({
-        username: '', email: '', password: '', confirmPassword: '',
-        role: 'STUDENT', first_name: '', last_name: ''
-    });
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const loginResponse = await login(loginData.username, loginData.password);
+      const user = await getMe();
+      const role = user.role;
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Invalid username or password.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-        try {
-            const response = await axios.post('http://127.0.0.1:8000/api/token/', loginData);
-            localStorage.setItem('token', response.data.access);
-            
-            // Extract role from JWT for RBAC logic
-            const payload = JSON.parse(atob(response.data.access.split('.')[1]));
-            localStorage.setItem('user_role', payload.role || 'STUDENT');
-            localStorage.setItem('username', payload.username || loginData.username);
-            
-            navigate('/dashboard');
-        } catch (err) {
-            setError('Invalid username or password.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (registerData.password !== registerData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { confirmPassword, ...userData } = registerData;
+      await register(userData);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.username?.[0] || 'Registration failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        setError('');
-        if (registerData.password !== registerData.confirmPassword) {
-            setError('Passwords do not match.');
-            return;
-        }
-        setLoading(true);
-        try {
-            const { confirmPassword, ...userData } = registerData;
-            await axios.post('http://127.0.0.1:8000/api/users/', userData); // Adjust endpoint if needed
-            setShowLogin(true);
-            alert("Registration successful! Please login.");
-        } catch (err) {
-            setError(err.response?.data?.username?.[0] || 'Registration failed.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="login-container" style={{ padding: '20px', maxWidth: '400px', margin: 'auto' }}>
-            {showLogin ? (
-                <div className="loginForm">
-                    <h2>ILES Login</h2>
-                    <form onSubmit={handleLogin}>
-                        <div style={{ marginBottom: '10px' }}>
-                            <User size={18} />
-                            <input 
-                                placeholder="Username" 
-                                value={loginData.username}
-                                onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                                required 
-                            />
-                        </div>
-                        <div style={{ marginBottom: '10px' }}>
-                            <KeyRound size={18} />
-                            <input 
-                                type="password" 
-                                placeholder="Password" 
-                                value={loginData.password}
-                                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                                required 
-                            />
-                        </div>
-                        {error && <p style={{ color: 'red' }}>{error}</p>}
-                        <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
-                    </form>
-                    <p>New here? <a href="#" onClick={() => setShowLogin(false)}>Sign up</a></p>
-                </div>
-            ) : (
-                <div className="SignUpForm">
-                    <h2>Sign Up</h2>
-                    <form onSubmit={handleRegister}>
-                        <input placeholder="Username" onChange={(e) => setRegisterData({...registerData, username: e.target.value})} required />
-                        <input type="email" placeholder="Email" onChange={(e) => setRegisterData({...registerData, email: e.target.value})} required />
-                        <input type="password" placeholder="Password" onChange={(e) => setRegisterData({...registerData, password: e.target.value})} required />
-                        <input type="password" placeholder="Confirm Password" onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})} required />
-                        <select value={registerData.role} onChange={(e) => setRegisterData({...registerData, role: e.target.value})}>
-                            <option value="STUDENT">Student Intern</option>
-                            <option value="ADMIN">Internship Administrator</option>
-                        </select>
-                        {error && <p style={{ color: 'red' }}>{error}</p>}
-                        <button type="submit" disabled={loading}>Sign Up</button>
-                    </form>
-                    <p>Already have an account? <a href="#" onClick={() => setShowLogin(true)}>Login</a></p>
-                </div>
-            )}
+  return (
+    <>
+      {showLogin ? (
+        <div className="loginForm">
+          <div className="Header">
+            <h2>Login</h2>
+          </div>
+          <form onSubmit={handleLogin}>
+            <div>
+              <U />
+              <input
+                placeholder="Username..."
+                value={loginData.username}
+                onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
+              />
+            </div>
+            <div>
+              <KR />
+              <input
+                type="password"
+                placeholder="Password..."
+                value={loginData.password}
+                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+              />
+            </div>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <div className="Login">
+              <button type="submit" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </div>
+          </form>
+          <div className="SignUpPrompt">
+            <p>
+              New here?
+              <a href="#" onClick={() => setShowLogin(false)}>
+                Sign up
+              </a>
+            </p>
+          </div>
         </div>
-    );
-};
+      ) : (
+        <div className="SignUpForm">
+          <div className="Header">
+            <h2>Sign Up</h2>
+          </div>
+          <form onSubmit={handleRegister}>
+            <div>
+              <U />
+              <input
+                placeholder="Username..."
+                value={registerData.username}
+                onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+              />
+            </div>
+            <div>
+              <Mail />
+              <input
+                type="email"
+                placeholder="Email..."
+                value={registerData.email}
+                onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <KR />
+              <input
+                type="password"
+                placeholder="Password..."
+                value={registerData.password}
+                onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+              />
+            </div>
+            <div>
+              <LK />
+              <input
+                type="password"
+                placeholder="Confirm Password..."
+                value={registerData.confirmPassword}
+                onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+              />
+            </div>
+            <div>
+              <Gavel />
+              <select
+                value={registerData.role}
+                onChange={(e) => setRegisterData({ ...registerData, role: e.target.value })}
+              >
+                <option value="student">Student Intern</option>
+                <option value="workplace_supervisor">Workplace Supervisor</option>
+                <option value="academic_supervisor">Academic Supervisor</option>
+                <option value="intern_admin">Internship Administrator</option>
+              </select>
+            </div>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <div className="SignUp">
+              <button type="submit" disabled={loading}>
+                {loading ? 'Signing up...' : 'Sign Up'}
+              </button>
+            </div>
+          </form>
+          <div className="LoginPrompt">
+            <p>
+              Already have an account?
+              <a href="#" onClick={() => setShowLogin(true)}>
+                Login
+              </a>
+            </p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
-export default LoginPage;
+export default Loginpage;
