@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
+from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria,ReviewComment
 from .permissions import IsStudent, IsInternAdmin, IsWorkplaceSupervisor, IsAcademicSupervisor
 from .serializers import (
     RegisterSerializer,
@@ -14,7 +14,8 @@ from .serializers import (
     WeeklyLogSerializer,
     EvaluationSerializer,
     EvaluationCriteriaSerializer,
-    CustomTokenObtainPairSerializer
+    CustomTokenObtainPairSerializer,
+    ReviewCommentSerializer
 )
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -75,7 +76,11 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'submit', 'recall']:
             return [IsStudent()]
-        elif self.action in ['list', 'retrieve']:
+        elif self.action in ['approve', 'reject']:
+            return [IsWorkplaceSupervisor()]
+        elif self.action in ['review']:
+            return [IsAcademicSupervisor()]
+        elif self.action in ['list', 'retrieve', 'history']:
             return [IsAuthenticated()]
         return [IsInternAdmin()]
         
@@ -125,6 +130,84 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         weekly_log.save()
         return Response({'message': f'Weekly log {weekly_log.week_number} recalled successfully.'},
                         status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        log = self.get_object()
+
+        if log.status not in ['submitted', 'reviewed']:
+            return Response(
+                {'error': 'Only submitted or reviewed logs can be approved.'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        comment_text = request.data.get('comment', '')
+        log.status = 'approved'
+        log.save()
+
+        ReviewComment.objects.create(
+            log=log,
+            reviewer=request.user,
+            comment=comment_text,
+            action='approved'
+        )
+        return Response({'message': f'Week {log.week_number} log approved.'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        log = self.get_object()
+
+        if log.status not in ['submitted', 'reviewed']:
+            return Response(
+                {'error': 'Only submitted or reviewed logs can be rejected.'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        comment_text = request.data.get('comment', '')
+        if not comment_text:
+            return Response(
+                {'error': 'A comment is required when rejecting a log.'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        log.status = 'draft'
+        log.submitted_at = None
+        log.save()
+
+        ReviewComment.objects.create(
+            log=log,
+            reviewer=request.user,
+            comment=comment_text,
+            action='rejected'
+        )
+        return Response({'message': f'Week {log.week_number} log rejected and returned to student.'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'])
+    def history(self, request, pk=None):
+        log = self.get_object()
+        comments = ReviewComment.objects.filter(log=log).order_by('created_at')
+        serializer = ReviewCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+    
+    
+    @action(detail=True, methods=['post'])
+    def review(self, request, pk=None):
+        log = self.get_object()
+
+        if log.status != 'submitted':
+            return Response(
+            {'error': 'Only submitted logs can be marked as reviewed.'},
+            status=status.HTTP_400_BAD_REQUEST)
+
+        comment_text = request.data.get('comment', '')
+        log.status = 'reviewed'
+        log.save()
+
+        ReviewComment.objects.create(
+        log=log,
+        reviewer=request.user,
+        comment=comment_text,
+        action='reviewed'
+    )
+        return Response({'message': f'Week {log.week_number} log marked as reviewed.'}, status=status.HTTP_200_OK)
+
 
 class EvaluationViewset(viewsets.ModelViewSet):
     queryset = Evaluation.objects.all()
