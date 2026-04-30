@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, CustomUser
+from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, CustomUser, ReviewComment
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
@@ -50,6 +51,7 @@ class WeeklyLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeeklyLog
         fields = '__all__'
+        read_only_fields = ['status', 'submitted_at', 'is_editable']
 
     def update(self, instance, validated_data):
         if instance.status == 'approved':
@@ -88,3 +90,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         data['role'] = self.user.role or "No Role Assigned"
         return data
+    
+class ReviewCommentSerializer(serializers.ModelSerializer):
+    reviewer_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ReviewComment
+        fields = '__all__'
+        read_only_fields = ['reviewer', 'created_at']
+
+    def get_reviewer_name(self, obj):
+        if obj.reviewer:
+            return f"{obj.reviewer.first_name} {obj.reviewer.last_name}"
+        
+        return "Unknown"
