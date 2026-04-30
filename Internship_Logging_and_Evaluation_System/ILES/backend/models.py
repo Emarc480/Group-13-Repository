@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -60,6 +61,7 @@ class WeeklyLog(models.Model):
     activities = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(null=True, blank=True)
+    deadline = models.DateField(null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -68,6 +70,20 @@ class WeeklyLog(models.Model):
                 name='unique_log_per_placement_week'
             )
         ]
+
+    def is_editable(self):
+        if self.status == 'approved':
+            return False
+        
+        if self.deadline and timezone.now().date() > self.deadline:
+            return False
+        
+        return True
+    
+    def clean(self):
+        if not self.is_editable() and self.pk:
+            raise ValidationError("this log can nolonger be edited")
+
 
 class EvaluationCriteria(models.Model):
     name = models.CharField(max_length=100)
@@ -79,3 +95,14 @@ class Evaluation(models.Model):
     score = models.DecimalField(max_digits=5, decimal_places=2)
     evaluated_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
     evaluated_at = models.DateTimeField(auto_now_add=True)
+
+class ReviewComment(models.Model):
+    log = models.ForeignKey(WeeklyLog, on_delete=models.CASCADE, related_name='comments')
+    reviewer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    comment = models.TextField()
+    action = models.CharField(max_length=20, choices=[
+        ('reviewed', 'Reviewed'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ])
+    created_at = models.DateTimeField(auto_now_add=True)
