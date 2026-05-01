@@ -1,19 +1,25 @@
 from django.shortcuts import render
+from django.utils import timezone
 from rest_framework import viewsets, generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria,ReviewComment
 from .permissions import IsStudent, IsInternAdmin, IsWorkplaceSupervisor, IsAcademicSupervisor
 from .serializers import (
     RegisterSerializer,
     InternshipPlacementSerializer,
     WeeklyLogSerializer,
     EvaluationSerializer,
-    EvaluationCriteriaSerializer
+    EvaluationCriteriaSerializer,
+    CustomTokenObtainPairSerializer,
+    ReviewCommentSerializer
 )
-# Create your views here.
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -34,7 +40,7 @@ class RegisterView(generics.CreateAPIView):
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         }, status=status.HTTP_201_CREATED)
-    
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me(request):
@@ -51,17 +57,162 @@ def me(request):
 class InternshipPlacementViewset(viewsets.ModelViewSet):
     queryset = InternshipPlacement.objects.all()
     serializer_class = InternshipPlacementSerializer
-    permission_classes = [IsInternAdmin]
+    permission_classes = [IsAuthenticated, IsInternAdmin]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'intern_admin':
+            return InternshipPlacement.objects.all()
+        elif user.role == 'student':
+            return InternshipPlacement.objects.filter(student=user)
+        elif user.role == 'workplace_supervisor':
+            return InternshipPlacement.objects.filter(workplace_supervisor=user)
+        return InternshipPlacement.objects.none()
 
 class WeeklyLogViewset(viewsets.ModelViewSet):
     queryset = WeeklyLog.objects.all()
     serializer_class = WeeklyLogSerializer
-    permission_classes = [IsStudent]
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'submit', 'recall']:
+            return [IsStudent()]
+        elif self.action in ['approve', 'reject']:
+            return [IsWorkplaceSupervisor()]
+        elif self.action in ['review']:
+            return [IsAcademicSupervisor()]
+        elif self.action in ['list', 'retrieve', 'history']:
+            return [IsAuthenticated()]
+        return [IsInternAdmin()]
+        
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'student':
+            return WeeklyLog.objects.filter(placement__student=user)
+        elif user.role in ['workplace_supervisor', 'academic_supervisor']:
+            return WeeklyLog.objects.filter(placement__workplace_supervisor=user)
+        elif user.role == 'intern_admin':
+            return WeeklyLog.objects.all()
+        return WeeklyLog.objects.none()
+    
+    @action(detail=True, methods=['post'])
+    def submit(self, request, pk=None):
+        weekly_log = self.get_object()
+        if weekly_log.status != 'draft':
+            return Response(
+                {'error': 'Only draft logs can be submitted.'},
+                status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(weekly_log, data={'status': 'submitted'}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        
+        weekly_log.status = 'submitted'
+        weekly_log.submitted_at = timezone.now()
+        weekly_log.save()
+        return Response({'message': f'Weekly log {weekly_log.week_number} submitted successfully.'},
+                        status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['post'])
+    def recall(self, request, pk=None):
+        weekly_log = self.get_object()
+
+        if weekly_log.status != 'submitted':
+            return Response(
+                {'error': 'Only submitted logs can be recalled.'},
+                status=status.HTTP_400_BAD_REQUEST)
+        
+        if weekly_log.placement.student != request.user:
+            return Response(
+                {'error': 'You can only recall your own submitted logs.'},
+                status=status.HTTP_403_FORBIDDEN)
+        
+        weekly_log.status = 'draft'
+        weekly_log.submitted_at = None
+        weekly_log.save()
+        return Response({'message': f'Weekly log {weekly_log.week_number} recalled successfully.'},
+                        status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        log = self.get_object()
+
+        if log.status not in ['submitted', 'reviewed']:
+            return Response(
+                {'error': 'Only submitted or reviewed logs can be approved.'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        comment_text = request.data.get('comment', '')
+        log.status = 'approved'
+        log.save()
+
+        ReviewComment.objects.create(
+            log=log,
+            reviewer=request.user,
+            comment=comment_text,
+            action='approved'
+        )
+        return Response({'message': f'Week {log.week_number} log approved.'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        log = self.get_object()
+
+        if log.status not in ['submitted', 'reviewed']:
+            return Response(
+                {'error': 'Only submitted or reviewed logs can be rejected.'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        comment_text = request.data.get('comment', '')
+        if not comment_text:
+            return Response(
+                {'error': 'A comment is required when rejecting a log.'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        log.status = 'draft'
+        log.submitted_at = None
+        log.save()
+
+        ReviewComment.objects.create(
+            log=log,
+            reviewer=request.user,
+            comment=comment_text,
+            action='rejected'
+        )
+        return Response({'message': f'Week {log.week_number} log rejected and returned to student.'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'])
+    def history(self, request, pk=None):
+        log = self.get_object()
+        comments = ReviewComment.objects.filter(log=log).order_by('created_at')
+        serializer = ReviewCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+    
+    
+    @action(detail=True, methods=['post'])
+    def review(self, request, pk=None):
+        log = self.get_object()
+
+        if log.status != 'submitted':
+            return Response(
+            {'error': 'Only submitted logs can be marked as reviewed.'},
+            status=status.HTTP_400_BAD_REQUEST)
+
+        comment_text = request.data.get('comment', '')
+        log.status = 'reviewed'
+        log.save()
+
+        ReviewComment.objects.create(
+        log=log,
+        reviewer=request.user,
+        comment=comment_text,
+        action='reviewed'
+    )
+        return Response({'message': f'Week {log.week_number} log marked as reviewed.'}, status=status.HTTP_200_OK)
+
 
 class EvaluationViewset(viewsets.ModelViewSet):
     queryset = Evaluation.objects.all()
     serializer_class = EvaluationSerializer
-    permission_classes = [ IsStudent | IsAcademicSupervisor]
+    permission_classes = [IsStudent | IsAcademicSupervisor]
 
 class EvaluationCriteriaViewset(viewsets.ModelViewSet):
     queryset = EvaluationCriteria.objects.all()
