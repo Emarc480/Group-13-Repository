@@ -57,7 +57,11 @@ def me(request):
 class InternshipPlacementViewset(viewsets.ModelViewSet):
     queryset = InternshipPlacement.objects.all()
     serializer_class = InternshipPlacementSerializer
-    permission_classes = [IsAuthenticated, IsInternAdmin]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsInternAdmin()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user
@@ -88,8 +92,10 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'student':
             return WeeklyLog.objects.filter(placement__student=user)
-        elif user.role in ['workplace_supervisor', 'academic_supervisor']:
+        elif user.role == 'workplace_supervisor':
             return WeeklyLog.objects.filter(placement__workplace_supervisor=user)
+        elif user.role == 'academic_supervisor':
+            return WeeklyLog.objects.all()
         elif user.role == 'intern_admin':
             return WeeklyLog.objects.all()
         return WeeklyLog.objects.none()

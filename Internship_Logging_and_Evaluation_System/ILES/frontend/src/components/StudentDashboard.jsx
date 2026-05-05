@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { getLogs, createLog, updateLog, submitLog, recallLog } from "../services/logService";
+import axios from "axios";
+
+const API_URL = "http://127.0.0.1:8000/api/";
+const authHeaders = () => ({
+  headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+});
 
 function StudentDashboard() {
   const [logs, setLogs] = useState([]);
@@ -13,11 +19,28 @@ function StudentDashboard() {
   const [formData, setFormData] = useState({ week_number: '', activities: '', placement: '' });
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const[placement, setPlacement] = useState(null);
+  const[placementLoading, setPlacementLoading] = useState(true);
 
   // Fetch logs on 
   useEffect(() => {
+    fetchPlacement();
     fetchLogs();
   }, []);
+
+  const fetchPlacement = async () => {
+  try {
+    setPlacementLoading(true);
+    const res = await axios.get(`${API_URL}placements/`, authHeaders());
+    if (res.data.length > 0) {
+      setPlacement(res.data[0]);
+    }
+  } catch (err) {
+    setError("Could not load your placement. Contact your administrator.");
+  } finally {
+    setPlacementLoading(false);
+    }
+  };
 
   const fetchLogs = async () => {
     try {
@@ -38,6 +61,10 @@ function StudentDashboard() {
 
   // Open form for new log
   const handleNewLog = () => {
+    if (!placement){
+      setError("You don't have any active placement, and therefore you cannot create a new log");
+      return;
+  }
     setEditingLog(null);
     setFormData({ week_number: '', activities: '', placement: '' });
     setFormError(null);
@@ -66,7 +93,7 @@ function StudentDashboard() {
         await updateLog(editingLog.id, { activities: formData.activities });
         showSuccess(`Week ${editingLog.week_number} log updated.`);
       } else {
-        await createLog(formData);
+        await createLog({...formData, placement:placement.id});
         showSuccess(`Week ${formData.week_number} log created.`);
       }
       setShowForm(false);
@@ -136,6 +163,19 @@ function StudentDashboard() {
       <h2>Student Dashboard</h2>
       <p>Manage your weekly internship logs below.</p>
 
+      {!placementLoading && (
+  placement ? (
+    <div style={{ background: "#e8f4fd", border: "1px solid #b8d9f0", borderRadius: "6px", padding: "10px 16px", marginBottom: "16px", fontSize: "0.9rem" }}>
+      <strong>Active placement:</strong> {placement.company_name} &nbsp;|&nbsp;
+      {placement.start_date} → {placement.end_date}
+    </div>
+  ) : (
+    <div style={{ background: "#f2dede", color: "#a94442", padding: "10px 16px", borderRadius: "6px", marginBottom: "16px" }}>
+      ⚠ No active placement found. Contact your internship administrator.
+    </div>
+  )
+)}
+
       {/* Success / Error banners */}
       {successMsg && (
         <div style={{ background: '#dff0d8', color: '#3c763d', padding: '10px 16px', borderRadius: '6px', marginBottom: '12px' }}>
@@ -165,18 +205,14 @@ function StudentDashboard() {
             {/* Only show these fields when creating */}
             {!editingLog && (
               <>
-                <div style={fieldStyle}>
-                  <label>Placement ID</label>
-                  <input
-                    type="number"
-                    name="placement"
-                    value={formData.placement}
-                    onChange={handleFormChange}
-                    required
-                    style={inputStyle}
-                    placeholder="Enter your placement ID"
-                  />
+                {placement && (
+                <div style={{ ...fieldStyle, marginBottom: "14px" }}>
+                    <label style={{ fontWeight: "500", fontSize: "0.9rem", color: "#555" }}>Placement</label>
+                      <div style={{ padding: "8px", background: "#eee", borderRadius: "4px", fontSize: "0.95rem" }}>
+                      {placement.company_name} (ID: {placement.id})
+                      </div>
                 </div>
+)}
                 <div style={fieldStyle}>
                   <label>Week Number</label>
                   <input
