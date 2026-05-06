@@ -76,9 +76,33 @@ class WeeklyLogSerializer(serializers.ModelSerializer):
         return data
 
 class EvaluationSerializer(serializers.ModelSerializer):
+    score = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
+    grade = serializers.CharField(read_only=True)
+    criteria_detail = serializers.SerializerMethodField()
+
     class Meta:
         model = Evaluation
         fields = '__all__'
+        read_only_fields = ['score', 'grade', 'evaluated_by', 'evaluated_at']
+
+    def get_criteria_detail(self, obj):
+        x = obj.criteria
+        return {
+            'punctuality': x.punctuality,
+            'technical_skills': x.technical_skills,
+            'communication': x.communication,
+            'initiative': x.initiative,
+            'total_score': str(x.total_score),
+        }
+
+    def validate(self, data):
+        placement = data.get('placement')
+        instance = self.instance
+        if instance is None:
+            if Evaluation.objects.filter(placement=placement).exists():
+                raise serializers.ValidationError(
+                    "An evaluation already exists for this placement.")
+        return data
 
 class EvaluationCriteriaSerializer(serializers.ModelSerializer):
     class Meta:
