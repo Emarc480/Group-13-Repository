@@ -132,14 +132,39 @@ class EvaluationCriteria(models.Model):
 
 
 class Evaluation(models.Model):
-    placement = models.ForeignKey(
-        InternshipPlacement, on_delete=models.CASCADE)
-    criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
-    score = models.DecimalField(max_digits=5, decimal_places=2)
-    evaluated_by = models.ForeignKey(
-        CustomUser, on_delete=models.SET_NULL, null=True)
-    evaluated_at = models.DateTimeField(auto_now_add=True)
+        GRADE_CHOICES = [
+        ('A', 'Distinction'),
+        ('B', 'Very Good'),
+        ('C', 'Good'),
+        ('D', 'Fair'),
+        ('F', 'Fail'),
+    ]
 
+        placement = models.OneToOneField(
+        InternshipPlacement, on_delete=models.CASCADE, related_name='evaluation')
+        criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
+        score = models.DecimalField(max_digits=5, decimal_places=2, editable=False, default=0)
+        grade = models.CharField(max_length=2, choices=GRADE_CHOICES, editable=False, blank=True)
+        evaluated_by = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True)
+        evaluated_at = models.DateTimeField(auto_now_add=True)
+
+        def calculate_grade(self):
+            if self.score >= 8:
+                return 'A'
+            elif self.score >= 6:
+                return 'B'
+            elif self.score >= 5:
+                return 'C'
+            elif self.score >= 4:
+                return 'D'
+            else:
+                return 'F'
+
+        def save(self, *args, **kwargs):
+            self.score = self.criteria.total_score
+            self.grade = self.calculate_grade()
+            super().save(*args, **kwargs)
 
 class ReviewComment(models.Model):
     log = models.ForeignKey(
