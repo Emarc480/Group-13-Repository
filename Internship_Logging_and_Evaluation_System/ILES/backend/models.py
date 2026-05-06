@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 
+
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
         ('student', 'Student_Intern'),
@@ -12,10 +13,13 @@ class CustomUser(AbstractUser):
         ('academic_supervisor', 'Academic_Supervisor'),
         ('intern_admin', 'Internship_Administrator'),
     ]
-    role = models.CharField(max_length=30, choices=ROLE_CHOICES)
+    role = models.CharField(
+        max_length=30, choices=ROLE_CHOICES, default='student')
+
 
 class InternshipPlacement(models.Model):
-    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='placements')
+    student = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='placements')
     student_no = models.CharField(default="0", max_length=20)
     company_name = models.CharField(max_length=45)
     start_date = models.DateField()
@@ -34,7 +38,8 @@ class InternshipPlacement(models.Model):
     def clean(self):
         if self.start_date and self.end_date:
             if self.start_date > self.end_date:
-                raise ValidationError("Start date cannot be greater than end date.")
+                raise ValidationError(
+                    "Start date cannot be greater than end date.")
 
             overlapping_placements = InternshipPlacement.objects.filter(
                 student=self.student,
@@ -51,6 +56,7 @@ class InternshipPlacement(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
+
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
@@ -58,10 +64,12 @@ class WeeklyLog(models.Model):
         ('reviewed', 'Reviewed'),
         ('approved', 'Approved'),
     ]
-    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
+    placement = models.ForeignKey(
+        InternshipPlacement, on_delete=models.CASCADE)
     week_number = models.PositiveIntegerField()
     activities = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(null=True, blank=True)
     deadline = models.DateField(null=True, blank=True)
 
@@ -76,23 +84,33 @@ class WeeklyLog(models.Model):
     def is_editable(self):
         if self.status == 'approved':
             return False
-        
+
         if self.deadline and timezone.now().date() > self.deadline:
             return False
-        
+
         return True
-    
+
     def clean(self):
         if not self.is_editable() and self.pk:
             raise ValidationError("this log can nolonger be edited")
 
 
 class EvaluationCriteria(models.Model):
-    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE, related_name='evaluation_criteria')
-    punctuality = models.PositiveBigIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
-    technical_skills = models.PositiveBigIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
-    communication = models.PositiveBigIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
-    initiative = models.PositiveBigIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    placement = models.ForeignKey(
+        InternshipPlacement, on_delete=models.CASCADE, related_name='evaluation_criteria',
+        default=None, null=True, blank=True)
+    punctuality = models.PositiveBigIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        default=1)
+    technical_skills = models.PositiveBigIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        default=1)
+    communication = models.PositiveBigIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        default=1)
+    initiative = models.PositiveBigIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        default=1)
 
     total_score = models.DecimalField(
         max_digits=5, decimal_places=2, editable=False, default=0
@@ -107,22 +125,27 @@ class EvaluationCriteria(models.Model):
             (self.initiative * 0.2)
         ]
         return sum(scores)
-    
+
     def save(self, *args, **kwargs):
         self.total_score = self.calculate_total_score()
         super().save(*args, **kwargs)
 
 
 class Evaluation(models.Model):
-    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
+    placement = models.ForeignKey(
+        InternshipPlacement, on_delete=models.CASCADE)
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2)
-    evaluated_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    evaluated_by = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True)
     evaluated_at = models.DateTimeField(auto_now_add=True)
 
+
 class ReviewComment(models.Model):
-    log = models.ForeignKey(WeeklyLog, on_delete=models.CASCADE, related_name='comments')
-    reviewer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    log = models.ForeignKey(
+        WeeklyLog, on_delete=models.CASCADE, related_name='comments')
+    reviewer = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True)
     comment = models.TextField()
     action = models.CharField(max_length=20, choices=[
         ('reviewed', 'Reviewed'),
