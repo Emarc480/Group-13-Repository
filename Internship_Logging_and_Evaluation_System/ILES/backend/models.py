@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -86,8 +88,30 @@ class WeeklyLog(models.Model):
 
 
 class EvaluationCriteria(models.Model):
-    name = models.CharField(max_length=100)
-    weight = models.DecimalField(max_digits=5, decimal_places=2)
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE, related_name='evaluation_criteria')
+    punctuality = models.PositiveBigIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    technical_skills = models.PositiveBigIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    communication = models.PositiveBigIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    initiative = models.PositiveBigIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+
+    total_score = models.DecimalField(
+        max_digits=5, decimal_places=2, editable=False, default=0
+    )
+    is_finalized = models.BooleanField(default=False)
+
+    def calculate_total_score(self):
+        scores = [
+            (self.punctuality * 0.2),
+            (self. technical_skills * 0.4),
+            (self.communication * 0.2),
+            (self.initiative * 0.2)
+        ]
+        return sum(scores)
+    
+    def save(self, *args, **kwargs):
+        self.total_score = self.calculate_total_score()
+        super().save(*args, **kwargs)
+
 
 class Evaluation(models.Model):
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
