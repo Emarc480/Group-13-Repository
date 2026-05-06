@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
+import { logout } from '../services/authService';
 import { getMe } from '../services/authService';
 
 import AcademicSup from "../components/AcademicSup";
@@ -8,6 +10,7 @@ import WorkplaceSup from "../components/WorkplaceSup";
 import StudentDashboard from "../components/StudentDashboard";
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [role, setRole] = useState(null);
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -39,13 +42,23 @@ function Dashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
+
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column' }} >
       <div>
-        <p>Nav</p>
+        <button>Profile</button>
+        <button onClick={() => { handleLogout() }}>Logout</button>
       </div>
       <div>{RenderView()}</div>
-    </>
+    </div>
   );
 }
 
