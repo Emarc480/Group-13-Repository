@@ -230,3 +230,70 @@ class EvaluationCriteriaViewset(viewsets.ModelViewSet):
     queryset = EvaluationCriteria.objects.all()
     serializer_class = EvaluationCriteriaSerializer
     permission_classes = [IsInternAdmin | IsAcademicSupervisor]
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard_stats(request):
+    from django.db.models import Count
+
+    user = request.user
+
+    if user.role == 'intern_admin':
+        total_placements = InternshipPlacement.objects.count()
+        total_logs = WeeklyLog.objects.count()
+        logs_by_status = (
+            WeeklyLog.objects
+            .values('status')
+            .annotate(count=Count('id'))
+        )
+        placements_by_company = (
+            InternshipPlacement.objects
+            .values('company_name')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:5]
+        )
+        return Response({
+            'total_placements': total_placements,
+            'total_logs': total_logs,
+            'logs_by_status': list(logs_by_status),
+            'placements_by_company': list(placements_by_company),
+        })
+
+    elif user.role == 'academic_supervisor':
+        logs_by_status = (
+            WeeklyLog.objects
+            .values('status')
+            .annotate(count=Count('id'))
+        )
+        return Response({
+            'total_logs': WeeklyLog.objects.count(),
+            'logs_by_status': list(logs_by_status),
+        })
+
+    elif user.role == 'workplace_supervisor':
+        logs = WeeklyLog.objects.filter(placement__workplace_supervisor=user)
+        logs_by_status = (
+            logs.values('status')
+            .annotate(count=Count('id'))
+        )
+        return Response({
+            'total_logs': logs.count(),
+            'logs_by_status': list(logs_by_status),
+        })
+
+    elif user.role == 'student':
+        logs = WeeklyLog.objects.filter(placement__student=user)
+        logs_by_status = (
+            logs.values('status')
+            .annotate(count=Count('id'))
+        )
+        evaluation = Evaluation.objects.filter(placement__student=user).first()
+        return Response({
+            'total_logs': logs.count(),
+            'logs_by_status': list(logs_by_status),
+            'score': str(evaluation.score) if evaluation else None,
+            'grade': evaluation.grade if evaluation else None,
+        })
+
+    return Response({'error': 'Unknown role.'}, status=400)
