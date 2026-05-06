@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.utils import timezone
+from django.contrib.auth import logout
 from rest_framework import viewsets, generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -53,6 +54,11 @@ def me(request):
         'last_name': user.last_name,
         'role': user.role,
     })
+
+@api_view(['POST'])
+def logout_view(request):
+    logout(request)
+    return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
 
 class InternshipPlacementViewset(viewsets.ModelViewSet):
     queryset = InternshipPlacement.objects.all()
