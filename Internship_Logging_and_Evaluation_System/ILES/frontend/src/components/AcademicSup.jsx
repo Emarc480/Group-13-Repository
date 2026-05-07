@@ -20,6 +20,15 @@ function AcademicSup() {
     const [historyLog, setHistoryLog] = useState(null);
     const [history, setHistory] = useState([]);
 
+    const [evaluationLog, setEvaluationLog] = useState(null);
+    const [evaluationData, setEvaluationData] = useState({
+        punctuality: 1,
+        technical_skills: 1,
+        communication: 1,
+        initiative: 1
+    });
+    const [savingEvaluation, setSavingEvaluation] = useState(false);
+
     useEffect(() => {
         fetchLogs();
     }, []);
@@ -72,6 +81,40 @@ function AcademicSup() {
         }
     };
 
+    const openEvaluation = (log) => {
+        setEvaluationLog(log);
+
+        setEvaluationData({
+            punctuality: 1,
+            technical_skills: 1,
+            communication: 1,
+            initiative: 1
+        });
+    };
+
+    const handleEvaluationSave = async (finalize = false) => {
+        try {
+            setSavingEvaluation(true);
+            await axios.post(
+                `${API_URL}evaluations/`,
+                {
+                    placement: evaluationLog.placement,
+                    ...evaluationData,
+                    is_finalized: finalize,
+                },
+                authHeaders()
+            );
+            showSuccess(`Evaluation ${finalize ? "Evaluation finalized" : "saved"} successfully.`);
+            setSavingEvaluation(false);
+
+        } catch (err) {
+            setError("Failed to save evaluation.");
+            setSavingEvaluation(false);
+        } finally {
+            setSavingEvaluation(false);
+        }
+    };
+
     const statusBadge = (status) => {
         const colors = { draft: "#f0ad4e", submitted: "#5bc0de", reviewed: "#9b59b6", approved: "#5cb85c" };
         return (
@@ -83,6 +126,12 @@ function AcademicSup() {
 
     const submittedLogs = logs.filter(l => l.status === "submitted");
     const otherLogs = logs.filter(l => l.status !== "submitted");
+
+    const totalScore =
+        parseInt(evaluationData.punctuality * 0.2) +
+        parseInt(evaluationData.technical_skills * 0.4) +
+        parseInt(evaluationData.communication * 0.2) +
+        parseInt(evaluationData.initiative * 0.2);
 
     return (
         <div style={{ padding: "24px", maxWidth: "960px", margin: "0 auto" }}>
@@ -134,6 +183,9 @@ function AcademicSup() {
                                             <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>
                                                 History
                                             </button>
+                                            <button onClick={() => openEvaluation(log)} style={btnStyle("#5bc0de", "sm")}>
+                                                Evaluate
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -162,6 +214,9 @@ function AcademicSup() {
                                         <td style={tdStyle}>{statusBadge(log.status)}</td>
                                         <td style={tdStyle}>
                                             <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>History</button>
+                                            <button onClick={() => openEvaluation(log)} style={btnStyle("#5bc0de", "sm")}>
+                                                Evaluate
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -224,6 +279,63 @@ function AcademicSup() {
                             </table>
                         )}
                         <button onClick={() => setHistoryLog(null)} style={{ ...btnStyle("#aaa"), marginTop: "16px" }}>Close</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Evaluation Modal */}
+            {evaluationLog && (
+                <div style={overlayStyle}>
+                    <div style={modalStyle}>
+                        <h3>Evaluate Week {evaluationLog.week_number}</h3>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
+                            {[
+                                ["punctuality", "Punctuality"],
+                                ["technical_skills", "Technical Skills"],
+                                ["communication", "Communication"],
+                                ["initiative", "Initiative"]
+                            ].map(([key, label]) => (
+                            <div key={key}>
+                                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>{label}</label>
+
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="10"
+                                    value={evaluationData[key]}
+                                    onChange={(e) => setEvaluationData({ ...evaluationData, [key]: parseInt(e.target.value) })}
+                                    style={{ width: "100%" }}
+                                />
+                            </div>
+                            ))}
+                            <div style={{ fontWeight: "bold", marginTop: "8px", borderRadius: "4px", padding: "8px", background: "#f0f0f0" }}>Total Score: {totalScore.toFixed(2)}</div>
+
+                            <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
+                                <button
+                                    onClick={() => handleEvaluationSubmit(false)}
+                                    disabled={savingEvaluation}
+                                    style={btnStyle("#5bc0de")}
+                                >
+                                    Save Draft
+                                </button>
+
+                                <button
+                                    onClick={() => handleEvaluationSubmit(true)}
+                                    disabled={savingEvaluation}
+                                    style={btnStyle("#5cb85c")}
+                                >
+                                    Finalize
+                                </button>
+
+                                <button
+                                    onClick={() => setEvaluationLog(null)}
+                                    style={btnStyle("#aaa")}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
