@@ -265,6 +265,7 @@ function StudentDashboard() {
               <th style={thStyle}>Activities</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Submitted At</th>
+              <th style={thStyle}>Evaluation </th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
@@ -280,6 +281,18 @@ function StudentDashboard() {
                 <td style={tdStyle}>{statusBadge(log.status)}</td>
                 <td style={tdStyle}>
                   {log.submitted_at ? new Date(log.submitted_at).toLocaleString() : '—'}
+                </td>
+                <td style={tdStyle}>
+                  {log.evaluation_finalized ? (
+                    <div>
+                      <div style={{ color: '#5cb85c', fontWeight: 'bold', fontSize: '0.9rem' }}>Finalized</div>
+                      <div style={{ marginTop: '4px', fontSize: '0.85rem', color: '#333' }}>
+                        Score: {Number(log.evaluation_score).toFixed(2)}
+                      </div>
+                    </div>
+                  ):(
+                    <span style={{ color: '#888', fontSize: '0.8rem' }}>Pending</span>
+                  )}
                 </td>
                 <td style={{ ...tdStyle, display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {/* Edit: only draft logs */}

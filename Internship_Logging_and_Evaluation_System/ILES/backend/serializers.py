@@ -54,18 +54,25 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
 
 
 class WeeklyLogSerializer(serializers.ModelSerializer):
-    evaluation_finished = serializers.SerializerMethodField()
+    evaluation_score = serializers.SerializerMethodField()
+    evaluation_finalized = serializers.SerializerMethodField()
 
     class Meta:
         model = WeeklyLog
         fields = '__all__'
         read_only_fields = ['status', 'submitted_at', 'is_editable']
 
-    def get_evaluation_finished(self, obj):
+    def get_evaluation_finalized(self, obj):
         evaluation = obj.placement.evaluation_criteria.first()
         if evaluation:
             return evaluation.is_finalized
         return False
+
+    def get_evaluation_score(self, obj):
+        evaluation = obj.placement.evaluation_criteria.first()
+        if evaluation and evaluation.is_finalized:
+            return evaluation.total_score
+        return None
 
     def update(self, instance, validated_data):
         if instance.status == 'approved':
