@@ -5,16 +5,20 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password = serializers.CharField(
+        write_only=True, validators=[validate_password])
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'role', 'first_name', 'last_name']
+        fields = ['username', 'email', 'password',
+                  'role', 'first_name', 'last_name']
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
         return user
+
 
 class InternshipPlacementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,11 +29,12 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         student = data.get('student')
-        
+
         instance = self.instance
 
         if start_date and end_date and start_date > end_date:
-            raise serializers.ValidationError({"end_date": "End date must be after start date."})
+            raise serializers.ValidationError(
+                {"end_date": "End date must be after start date."})
 
         query = InternshipPlacement.objects.filter(
             student=student,
@@ -47,17 +52,27 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
 
         return data
 
+
 class WeeklyLogSerializer(serializers.ModelSerializer):
+    evaluation_finished = serializers.SerializerMethodField()
+
     class Meta:
         model = WeeklyLog
         fields = '__all__'
         read_only_fields = ['status', 'submitted_at', 'is_editable']
 
+    def get_evaluation_finished(self, obj):
+        evaluation = obj.placement.evaluation_criteria.first()
+        if evaluation:
+            return evaluation.is_finalized
+        return False
+
     def update(self, instance, validated_data):
         if instance.status == 'approved':
-            raise serializers.ValidationError("Cannot update a log that has been approved.")
+            raise serializers.ValidationError(
+                "Cannot update a log that has been approved.")
         return super().update(instance, validated_data)
-    
+
     def validate(self, data):
         from django.utils import timezone
         from datetime import timedelta
@@ -66,17 +81,20 @@ class WeeklyLogSerializer(serializers.ModelSerializer):
             placement = data.get('placement') or self.instance.placement
             week_number = data.get('week_number') or self.instance.week_number
 
-            week_start = placement.start_date + timedelta(weeks=week_number - 1)
+            week_start = placement.start_date + \
+                timedelta(weeks=week_number - 1)
             deadline = week_start + timedelta(days=7)
 
             if timezone.now().date() > deadline:
                 raise serializers.ValidationError(
-                        f"Submission deadline for week {week_number} has passed. Deadline was {deadline}."
-                        )
+                    f"Submission deadline for week {week_number} has passed. Deadline was {deadline}."
+                )
         return data
 
+
 class EvaluationSerializer(serializers.ModelSerializer):
-    score = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
+    score = serializers.DecimalField(
+        max_digits=5, decimal_places=2, read_only=True)
     grade = serializers.CharField(read_only=True)
     criteria_detail = serializers.SerializerMethodField()
 
@@ -104,17 +122,20 @@ class EvaluationSerializer(serializers.ModelSerializer):
                     "An evaluation already exists for this placement.")
         return data
 
+
 class EvaluationCriteriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = EvaluationCriteria
         fields = '__all__'
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         data['role'] = self.user.role or "No Role Assigned"
         return data
-    
+
+
 class ReviewCommentSerializer(serializers.ModelSerializer):
     reviewer_name = serializers.SerializerMethodField()
 
@@ -126,5 +147,5 @@ class ReviewCommentSerializer(serializers.ModelSerializer):
     def get_reviewer_name(self, obj):
         if obj.reviewer:
             return f"{obj.reviewer.first_name} {obj.reviewer.last_name}"
-        
+
         return "Unknown"

@@ -92,20 +92,23 @@ function AcademicSup() {
         });
     };
 
-    const handleEvaluationSave = async (finalize = false) => {
+    const handleEvaluationSubmit = async (finalize = false) => {
         try {
             setSavingEvaluation(true);
             await axios.post(
-                `${API_URL}evaluations/`,
+                `${API_URL}criteria/`,
                 {
-                    placement: evaluationLog.placement,
+                    placement: evaluationLog.placement_id,
                     ...evaluationData,
                     is_finalized: finalize,
                 },
                 authHeaders()
             );
             showSuccess(`Evaluation ${finalize ? "Evaluation finalized" : "saved"} successfully.`);
-            setSavingEvaluation(false);
+
+            setEvaluationLog(null);
+            
+            fetchLogs();
 
         } catch (err) {
             setError("Failed to save evaluation.");
@@ -174,7 +177,14 @@ function AcademicSup() {
                                                 {log.activities}
                                             </span>
                                         </td>
-                                        <td style={tdStyle}>{statusBadge(log.status)}</td>
+                                        <td style={tdStyle}>
+                                            {statusBadge(log.status)}
+                                            {log.evaluation_finalized && (
+                                                <div style={{ marginTop: "6px", fontSize: "0.75rem", color: "#5cb85c", fontWeight: "bold" }}>
+                                                    Evaluation Finalized
+                                                </div>
+                                            )}
+                                        </td>
                                         <td style={tdStyle}>{log.submitted_at ? new Date(log.submitted_at).toLocaleString() : "—"}</td>
                                         <td style={{ ...tdStyle, display: "flex", gap: "6px" }}>
                                             <button onClick={() => { setSelectedLog(log); setComment(""); }} style={btnStyle("#9b59b6", "sm")}>
@@ -218,7 +228,7 @@ function AcademicSup() {
                                                 Evaluate
                                             </button>
                                         </td>
-                                    </tr>
+                                    </tr>  
                                 ))}
                             </tbody>
                         </table>
@@ -296,18 +306,18 @@ function AcademicSup() {
                                 ["communication", "Communication"],
                                 ["initiative", "Initiative"]
                             ].map(([key, label]) => (
-                            <div key={key}>
-                                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>{label}</label>
+                                <div key={key}>
+                                    <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>{label}</label>
 
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="10"
-                                    value={evaluationData[key]}
-                                    onChange={(e) => setEvaluationData({ ...evaluationData, [key]: parseInt(e.target.value) })}
-                                    style={{ width: "100%" }}
-                                />
-                            </div>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="10"
+                                        value={evaluationData[key]}
+                                        onChange={(e) => setEvaluationData({ ...evaluationData, [key]: parseInt(e.target.value) })}
+                                        style={{ width: "100%" }}
+                                    />
+                                </div>
                             ))}
                             <div style={{ fontWeight: "bold", marginTop: "8px", borderRadius: "4px", padding: "8px", background: "#f0f0f0" }}>Total Score: {totalScore.toFixed(2)}</div>
 
