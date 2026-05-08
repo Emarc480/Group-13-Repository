@@ -32,6 +32,7 @@ function Loginpage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+  
     setError('');
     if (registerData.password !== registerData.confirmPassword) {
       setError('Passwords do not match.');
@@ -43,8 +44,12 @@ function Loginpage() {
       await register(userData);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.username?.[0] || 'Registration failed.');
-    } finally {
+      const data = err.response?.data;
+      const firstError = data
+        ? Object.values(data).flat()[0]
+        : 'Registration failed.';
+      setError(firstError);
+    }finally {
       setLoading(false);
     }
   };
@@ -96,6 +101,23 @@ function Loginpage() {
             <h2>Sign Up</h2>
           </div>
           <form onSubmit={handleRegister}>
+
+          <div>
+              <U />
+              <input
+                placeholder="First Name..."
+                value={registerData.first_name}
+                onChange={(e) => setRegisterData({ ...registerData, first_name: e.target.value })}
+              />
+            </div>
+            <div>
+              <U />
+              <input
+                placeholder="Last Name..."
+                value={registerData.last_name}
+                onChange={(e) => setRegisterData({ ...registerData, last_name: e.target.value })}
+              />
+            </div>
             <div>
               <U />
               <input
