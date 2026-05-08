@@ -10,7 +10,7 @@ from .views import (
     WeeklyLogViewset,
     EvaluationViewset,
     EvaluationCriteriaViewset,
-    dashboard_stats,
+    dashboard_summary,
 )
 
 router = DefaultRouter()
@@ -25,6 +25,6 @@ urlpatterns = [
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/logout/', logout_view, name='logout'),
     path('auth/me/', me, name='me'),
-    path('dashboard/stats/', dashboard_stats, name='dashboard_stats'),
     path('', include(router.urls)),
+    path('dashboard-summary/', dashboard_summary, name='dashboard-summary'),
 ]
