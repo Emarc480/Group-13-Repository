@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.utils import timezone
 from django.contrib.auth import logout
+from django.db.models import Count
 from rest_framework import viewsets, generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -220,44 +221,64 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
     )
         return Response({'message': f'Week {log.week_number} log marked as reviewed.'}, status=status.HTTP_200_OK)
 
-
 class EvaluationViewset(viewsets.ModelViewSet):
     queryset = Evaluation.objects.all()
     serializer_class = EvaluationSerializer
-    permission_classes = [IsStudent | IsAcademicSupervisor]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAcademicSupervisor()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role in ['academic_supervisor', 'intern_admin']:
+            return Evaluation.objects.all()
+        elif user.role == 'student':
+            return Evaluation.objects.filter(placement__student=user)
+        elif user.role == 'workplace_supervisor':
+            return Evaluation.objects.filter(placement__workplace_supervisor=user)
+        return Evaluation.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save(evaluated_by=self.request.user)
+
 
 class EvaluationCriteriaViewset(viewsets.ModelViewSet):
     queryset = EvaluationCriteria.objects.all()
     serializer_class = EvaluationCriteriaSerializer
-    permission_classes = [IsInternAdmin | IsAcademicSupervisor]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAcademicSupervisor()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.role in ['academic_supervisor', 'intern_admin']:
+            return EvaluationCriteria.objects.all()
+
+        return EvaluationCriteria.objects.none()
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def dashboard_stats(request):
-    from django.db.models import Count
-
+def dashboard_summary(request):
     user = request.user
 
     if user.role == 'intern_admin':
-        total_placements = InternshipPlacement.objects.count()
-        total_logs = WeeklyLog.objects.count()
         logs_by_status = (
             WeeklyLog.objects
             .values('status')
             .annotate(count=Count('id'))
         )
-        placements_by_company = (
-            InternshipPlacement.objects
-            .values('company_name')
-            .annotate(count=Count('id'))
-            .order_by('-count')[:5]
-        )
+
         return Response({
-            'total_placements': total_placements,
-            'total_logs': total_logs,
+            'total_students': CustomUser.objects.filter(role='student').count(),
+            'total_placements': InternshipPlacement.objects.count(),
+            'total_logs': WeeklyLog.objects.count(),
             'logs_by_status': list(logs_by_status),
-            'placements_by_company': list(placements_by_company),
         })
 
     elif user.role == 'academic_supervisor':
@@ -266,6 +287,7 @@ def dashboard_stats(request):
             .values('status')
             .annotate(count=Count('id'))
         )
+
         return Response({
             'total_logs': WeeklyLog.objects.count(),
             'logs_by_status': list(logs_by_status),
@@ -273,10 +295,12 @@ def dashboard_stats(request):
 
     elif user.role == 'workplace_supervisor':
         logs = WeeklyLog.objects.filter(placement__workplace_supervisor=user)
+
         logs_by_status = (
             logs.values('status')
             .annotate(count=Count('id'))
         )
+
         return Response({
             'total_logs': logs.count(),
             'logs_by_status': list(logs_by_status),
@@ -284,11 +308,14 @@ def dashboard_stats(request):
 
     elif user.role == 'student':
         logs = WeeklyLog.objects.filter(placement__student=user)
+
         logs_by_status = (
             logs.values('status')
             .annotate(count=Count('id'))
         )
+
         evaluation = Evaluation.objects.filter(placement__student=user).first()
+
         return Response({
             'total_logs': logs.count(),
             'logs_by_status': list(logs_by_status),
@@ -296,4 +323,4 @@ def dashboard_stats(request):
             'grade': evaluation.grade if evaluation else None,
         })
 
-    return Response({'error': 'Unknown role.'}, status=400)
+    return Response({'error': 'Unknown role.'}, status=status.HTTP_400_BAD_REQUEST)
