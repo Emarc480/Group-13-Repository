@@ -59,8 +59,13 @@ class WeeklyLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WeeklyLog
-        fields = '__all__'
-        read_only_fields = ['status', 'submitted_at', 'is_editable']
+        fields = [
+            'id', 'placement', 'week_number', 'activities',
+            'status', 'submitted_at',
+            'evaluation_score', 'evaluation_finalized',
+        ]
+        read_only_fields = ['status', 'submitted_at',
+                            'is_editable', 'evaluation_score', 'evaluation_finalized']
 
     def get_evaluation_finalized(self, obj):
         evaluation = obj.placement.evaluation_criteria.first()

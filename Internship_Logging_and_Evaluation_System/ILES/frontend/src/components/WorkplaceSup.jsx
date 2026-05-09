@@ -43,6 +43,12 @@ function WorkplaceSup() {
     setTimeout(() => setSuccessMsg(null), 3000);
   };
 
+  const openReview = (log) => {
+    setSelectedLog(log);
+    setModalAction("null");
+    setComment("");
+  }
+
   const openModal = (log, action) => {
     setSelectedLog(log);
     setModalAction(action);
@@ -143,7 +149,6 @@ function WorkplaceSup() {
                 <tr style={{ background: "#f5f5f5" }}>
                   <th style={thStyle}>Placement</th>
                   <th style={thStyle}>Week</th>
-                  <th style={thStyle}>Activities</th>
                   <th style={thStyle}>Status</th>
                   <th style={thStyle}>Submitted At</th>
                   <th style={thStyle}>Actions</th>
@@ -154,19 +159,11 @@ function WorkplaceSup() {
                   <tr key={log.id} style={{ borderBottom: "1px solid #eee" }}>
                     <td style={tdStyle}>{log.placement}</td>
                     <td style={tdStyle}>Week {log.week_number}</td>
-                    <td style={tdStyle}>
-                      <span style={{ display: "block", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {log.activities}
-                      </span>
-                    </td>
                     <td style={tdStyle}>{statusBadge(log.status)}</td>
                     <td style={tdStyle}>{log.submitted_at ? new Date(log.submitted_at).toLocaleString() : "—"}</td>
                     <td style={{ ...tdStyle, display: "flex", gap: "6px" }}>
-                      <button onClick={() => openModal(log, "approve")} style={btnStyle("#5cb85c", "sm")}>
-                        Approve
-                      </button>
-                      <button onClick={() => openModal(log, "reject")} style={btnStyle("#d9534f", "sm")}>
-                        Reject
+                      <button onClick={() => openReview(log)} style={btnStyle("#5bc0de", "sm")}>
+                        Review
                       </button>
                       <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>
                         History
@@ -209,37 +206,82 @@ function WorkplaceSup() {
         </>
       )}
 
-      {/* ── Approve / Reject Modal ── */}
-      {selectedLog && modalAction && (
+      {/* ── Review Modal ── */}
+      {reviewLog && (
         <div style={overlayStyle}>
-          <div style={modalStyle}>
-            <h3>
-              {modalAction === "approve"
-                ? `Approve Week ${selectedLog.week_number} Log`
-                : `Reject Week ${selectedLog.week_number} Log`}
-            </h3>
-            <p style={{ color: "#555", marginBottom: "12px" }}>
-              {modalAction === "approve"
-                ? "Optionally add a comment before approving."
-                : "A comment is required when rejecting so the student knows what to fix."}
-            </p>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={4}
-              placeholder={modalAction === "reject" ? "Explain why this log is being rejected..." : "Optional comment..."}
-              style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem", boxSizing: "border-box" }}
-            />
-            <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
-              <button
-                onClick={handleAction}
-                disabled={submitting}
-                style={btnStyle(modalAction === "approve" ? "#5cb85c" : "#d9534f")}
-              >
-                {submitting ? "Processing..." : modalAction === "approve" ? "Confirm Approve" : "Confirm Reject"}
-              </button>
-              <button onClick={closeModal} style={btnStyle("#aaa")}>Cancel</button>
+          <div style={{ ...modalStyle, width: "620px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0 }}>
+                Week {reviewLog.week_number} Log - {reviewLog.placement}
+              </h3>
+              {statusBadge(reviewLog.status)}
             </div>
+
+            {/* Full Log Details */}
+            <div style={logSection}>
+              <p style={logLabel}>Submitted</p>
+              <p style={logValue}>{reviewLog.submitted_at ? new Date(reviewLog.submitted_at).toLocaleString() : "—"}</p>
+            </div>
+
+            {reviewLog.date_start && reviewLog.date_end && (
+              <div style={logSection}>
+                <p style={logLabel}>Date Range</p>
+                <p style={logValue}>{reviewLog.date_start} to {reviewLog.date_end}</p>
+              </div>
+            )}
+
+            <div style={logSection}>
+              <p style={logLabel}>Activities</p>
+              <p style={{ ...logValue, whiteSpace: "pre-wrap" }}>{reviewLog.activities || "-"}</p>
+            </div>
+            //come back to this
+            {reviewLog.skills_learned && (
+              <div style={logSection}>
+                <p style={logLabel}>Skills Learnt</p>
+                <div style={{ display: "flex", flesWrap: "wrap", gap: "6px", marginTop: "4px" }}>
+                  {(Array.isArray(reviewLog.skills_learned)
+                    ? reviewLog.skills_learned
+                    : reviewLog.skills_learned.split(",")
+                  ).map((skill, i) => (
+                    <span key={i} style={skillPill}>{skill.trim()}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <hr style={{ border: "none", borderTop: "1px solid #eee", margin: "16px 0" }} />
+
+            {/* Action selection */}
+            {!modalAction ? (
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={() => setModalAction("approve")} style={btnStyle("#5cb85c")}>Approve</button>
+                <button onClick={() => setModalAction("reject")} style={btnStyle("#d9534f")}>Reject</button>
+                <button onClick={closeModal} style={btnStyle("#aaa")}>Cancel</button>
+              </div>
+            ) : (
+              <div>
+                <p style={{ color: "#555", marginBottom: "8px" }}>
+                  {modalAction === "approve"
+                    ? "Add a comment for approval (optional):"
+                    : "Please provide a comment for rejection:"}
+                </p>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  rows={3}
+                  placeholder={modalAction === "reject" ? "Explain why the log is being rejected..." : "Comment (optional for approval)..."}
+                  style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "0.9rem", boxSizing: "border-box" }}
+                />
+                <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                  <button onClick={handleAction} disabled={submitting} style={btnStyle(modalAction === "approve" ? "#5cb85c" : "#d9534f")}>
+                    {submitting ? "Submitting..." : modalAction === "approve" ? "Confirm Approval" : "Confirm Rejection"}
+                  </button>
+                  <button onClick={() => setModalAction(null)} style={btnStyle("#aaa")}>
+                    Back
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

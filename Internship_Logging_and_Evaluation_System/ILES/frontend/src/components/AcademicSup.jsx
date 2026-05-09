@@ -104,15 +104,20 @@ function AcademicSup() {
                 },
                 authHeaders()
             );
-            showSuccess(`Evaluation ${finalize ? "Evaluation finalized" : "saved"} successfully.`);
-
+            showSuccess(
+                finalize
+                    ? "Evaluation finalized successfully."
+                    : "Evaluation draft saved."
+            );
+            console.log("successfully submitted evaluation:", evaluationData);
             setEvaluationLog(null);
             
-            fetchLogs();
+
+            
 
         } catch (err) {
             setError("Failed to save evaluation.");
-            setSavingEvaluation(false);
+            setTimeout(() => setError(null), 4000);
         } finally {
             setSavingEvaluation(false);
         }
@@ -131,10 +136,10 @@ function AcademicSup() {
     const otherLogs = logs.filter(l => l.status !== "submitted");
 
     const totalScore =
-        parseInt(evaluationData.punctuality * 0.2) +
-        parseInt(evaluationData.technical_skills * 0.4) +
-        parseInt(evaluationData.communication * 0.2) +
-        parseInt(evaluationData.initiative * 0.2);
+        (evaluationData.punctuality * 0.2) +
+        (evaluationData.technical_skills * 0.4) +
+        (evaluationData.communication * 0.2) +
+        (evaluationData.initiative * 0.2);
 
     return (
         <div style={{ padding: "24px", maxWidth: "960px", margin: "0 auto" }}>
@@ -228,7 +233,7 @@ function AcademicSup() {
                                                 Evaluate
                                             </button>
                                         </td>
-                                    </tr>  
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
@@ -314,7 +319,7 @@ function AcademicSup() {
                                         min="1"
                                         max="10"
                                         value={evaluationData[key]}
-                                        onChange={(e) => setEvaluationData({ ...evaluationData, [key]: parseInt(e.target.value) })}
+                                        onChange={(e) => setEvaluationData({ ...evaluationData, [key]: Number(e.target.value) })}
                                         style={{ width: "100%" }}
                                     />
                                 </div>
