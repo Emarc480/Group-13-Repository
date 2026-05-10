@@ -13,7 +13,7 @@ function WorkplaceSup() {
   const [successMsg, setSuccessMsg] = useState(null);
 
   // Modal state — shared for approve and reject actions
-  const [selectedLog, setSelectedLog] = useState(null);
+  const [reviewLog, setReviewLog] = useState(null);
   const [modalAction, setModalAction] = useState(null); // 'approve' | 'reject'
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -44,25 +44,20 @@ function WorkplaceSup() {
   };
 
   const openReview = (log) => {
-    setSelectedLog(log);
+    setReviewLog(log);
     setModalAction("null");
     setComment("");
   }
 
-  const openModal = (log, action) => {
-    setSelectedLog(log);
-    setModalAction(action);
-    setComment("");
-  };
 
-  const closeModal = () => {
-    setSelectedLog(null);
+  const closeReview = () => {
+    setReviewLog(null);
     setModalAction(null);
     setComment("");
   };
 
   const handleAction = async () => {
-    if (!selectedLog || !modalAction) return;
+    if (!reviewLog || !modalAction) return;
     if (modalAction === "reject" && !comment.trim()) {
       setError("A comment is required when rejecting a log.");
       setTimeout(() => setError(null), 4000);
@@ -71,16 +66,16 @@ function WorkplaceSup() {
     setSubmitting(true);
     try {
       await axios.post(
-        `${API_URL}logs/${selectedLog.id}/${modalAction}/`,
+        `${API_URL}logs/${reviewLog.id}/${modalAction}/`,
         { comment },
         authHeaders()
       );
       showSuccess(
         modalAction === "approve"
-          ? `Week ${selectedLog.week_number} log approved.`
-          : `Week ${selectedLog.week_number} log rejected and returned to student.`
+          ? `Week ${reviewLog.week_number} log approved.`
+          : `Week ${reviewLog.week_number} log rejected and returned to student.`
       );
-      closeModal();
+      closeReview();
       fetchLogs();
     } catch (err) {
       const msg = err.response?.data?.error || "Action failed.";
@@ -223,31 +218,13 @@ function WorkplaceSup() {
               <p style={logValue}>{reviewLog.submitted_at ? new Date(reviewLog.submitted_at).toLocaleString() : "—"}</p>
             </div>
 
-            {reviewLog.date_start && reviewLog.date_end && (
-              <div style={logSection}>
-                <p style={logLabel}>Date Range</p>
-                <p style={logValue}>{reviewLog.date_start} to {reviewLog.date_end}</p>
-              </div>
-            )}
-
+            {/* Activities */}
             <div style={logSection}>
-              <p style={logLabel}>Activities</p>
-              <p style={{ ...logValue, whiteSpace: "pre-wrap" }}>{reviewLog.activities || "-"}</p>
+              <p style={logLabel}>Activities / Tasks completed</p>
+              <p style={{ ...logValue, whiteSpace: "pre-wrap" }}>
+                {reviewLog.activities || "No activities provided."}
+              </p>
             </div>
-            //come back to this
-            {reviewLog.skills_learned && (
-              <div style={logSection}>
-                <p style={logLabel}>Skills Learnt</p>
-                <div style={{ display: "flex", flesWrap: "wrap", gap: "6px", marginTop: "4px" }}>
-                  {(Array.isArray(reviewLog.skills_learned)
-                    ? reviewLog.skills_learned
-                    : reviewLog.skills_learned.split(",")
-                  ).map((skill, i) => (
-                    <span key={i} style={skillPill}>{skill.trim()}</span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <hr style={{ border: "none", borderTop: "1px solid #eee", margin: "16px 0" }} />
 
@@ -256,7 +233,7 @@ function WorkplaceSup() {
               <div style={{ display: "flex", gap: "10px" }}>
                 <button onClick={() => setModalAction("approve")} style={btnStyle("#5cb85c")}>Approve</button>
                 <button onClick={() => setModalAction("reject")} style={btnStyle("#d9534f")}>Reject</button>
-                <button onClick={closeModal} style={btnStyle("#aaa")}>Cancel</button>
+                <button onClick={closeReview} style={btnStyle("#aaa")}>Cancel</button>
               </div>
             ) : (
               <div>
@@ -273,8 +250,14 @@ function WorkplaceSup() {
                   style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "0.9rem", boxSizing: "border-box" }}
                 />
                 <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-                  <button onClick={handleAction} disabled={submitting} style={btnStyle(modalAction === "approve" ? "#5cb85c" : "#d9534f")}>
-                    {submitting ? "Submitting..." : modalAction === "approve" ? "Confirm Approval" : "Confirm Rejection"}
+                  <button
+                    onClick={handleAction}
+                    disabled={submitting} s
+                    tyle={btnStyle(modalAction === "approve" ? "#5cb85c" : "#d9534f")}
+                  >
+                    {submitting
+                      ? "Submitting..."
+                      : modalAction === "approve" ? "Confirm Approval" : "Confirm Rejection"}
                   </button>
                   <button onClick={() => setModalAction(null)} style={btnStyle("#aaa")}>
                     Back
@@ -324,6 +307,14 @@ function WorkplaceSup() {
     </div>
   );
 }
+
+const logSection = { marginBottom: "12px" };
+const logLabel = {
+  fontSize: "0.75rem", fontWeight: "600", color: "#888", margin: "0 0 4px",
+  textTransform: "uppercase", letterSpacing: "0.02em",
+};
+const logValue = { fontSize: "0.9rem", color: "#333", margin: 0
+};
 
 const btnStyle = (bg, size = "md") => ({
   background: bg, color: "#fff", border: "none",
