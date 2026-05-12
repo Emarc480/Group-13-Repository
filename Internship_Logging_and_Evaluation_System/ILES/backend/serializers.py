@@ -68,12 +68,17 @@ class WeeklyLogSerializer(serializers.ModelSerializer):
                             'is_editable', 'evaluation_score', 'evaluation_finalized']
 
     def get_evaluation_finalized(self, obj):
-        evaluation = obj.placement.evaluation_criteria.filter(is_finalized=True).first()
-        return evaluation is not None
+        try:
+            return obj.evaluation_criteria.is_finalized
+        except EvaluationCriteria.DoesNotExist:
+            return False
 
     def get_evaluation_score(self, obj):
-        evaluation = obj.placement.evaluation_criteria.filter(is_finalized=True).first()
-        return float(evaluation.total_score) if evaluation else None
+        try:
+            evaluation = obj.evaluation_criteria
+            return float(evaluation.total_score) if evaluation.is_finalized else None
+        except EvaluationCriteria.DoesNotExist:
+            return None
 
     def update(self, instance, validated_data):
         if instance.status == 'approved':

@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria,ReviewComment
+from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, ReviewComment
 from .permissions import IsStudent, IsInternAdmin, IsWorkplaceSupervisor, IsAcademicSupervisor
 from .serializers import (
     RegisterSerializer,
@@ -20,8 +20,10 @@ from .serializers import (
     ReviewCommentSerializer
 )
 
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -43,6 +45,7 @@ class RegisterView(generics.CreateAPIView):
             'refresh': str(refresh),
         }, status=status.HTTP_201_CREATED)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me(request):
@@ -56,10 +59,12 @@ def me(request):
         'role': user.role,
     })
 
+
 @api_view(['POST'])
 def logout_view(request):
     logout(request)
     return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+
 
 class InternshipPlacementViewset(viewsets.ModelViewSet):
     queryset = InternshipPlacement.objects.all()
@@ -80,10 +85,11 @@ class InternshipPlacementViewset(viewsets.ModelViewSet):
             return InternshipPlacement.objects.filter(workplace_supervisor=user)
         return InternshipPlacement.objects.none()
 
+
 class WeeklyLogViewset(viewsets.ModelViewSet):
     queryset = WeeklyLog.objects.all()
     serializer_class = WeeklyLogSerializer
-    
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'submit', 'recall']:
             return [IsStudent()]
@@ -94,7 +100,7 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         elif self.action in ['list', 'retrieve', 'history']:
             return [IsAuthenticated()]
         return [IsInternAdmin()]
-        
+
     def get_queryset(self):
         user = self.request.user
         if user.role == 'student':
@@ -106,7 +112,7 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         elif user.role == 'intern_admin':
             return WeeklyLog.objects.all()
         return WeeklyLog.objects.none()
-    
+
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
         weekly_log = self.get_object()
@@ -114,16 +120,17 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
             return Response(
                 {'error': 'Only draft logs can be submitted.'},
                 status=status.HTTP_400_BAD_REQUEST)
-        
-        serializer = self.get_serializer(weekly_log, data={'status': 'submitted'}, partial=True)
+
+        serializer = self.get_serializer(
+            weekly_log, data={'status': 'submitted'}, partial=True)
         serializer.is_valid(raise_exception=True)
-        
+
         weekly_log.status = 'submitted'
         weekly_log.submitted_at = timezone.now()
         weekly_log.save()
         return Response({'message': f'Weekly log {weekly_log.week_number} submitted successfully.'},
                         status=status.HTTP_200_OK)
-    
+
     @action(detail=True, methods=['post'])
     def recall(self, request, pk=None):
         weekly_log = self.get_object()
@@ -132,12 +139,12 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
             return Response(
                 {'error': 'Only submitted logs can be recalled.'},
                 status=status.HTTP_400_BAD_REQUEST)
-        
+
         if weekly_log.placement.student != request.user:
             return Response(
                 {'error': 'You can only recall your own submitted logs.'},
                 status=status.HTTP_403_FORBIDDEN)
-        
+
         weekly_log.status = 'draft'
         weekly_log.submitted_at = None
         weekly_log.save()
@@ -198,28 +205,28 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
         comments = ReviewComment.objects.filter(log=log).order_by('created_at')
         serializer = ReviewCommentSerializer(comments, many=True)
         return Response(serializer.data)
-    
-    
+
     @action(detail=True, methods=['post'])
     def review(self, request, pk=None):
         log = self.get_object()
 
         if log.status != 'submitted':
             return Response(
-            {'error': 'Only submitted logs can be marked as reviewed.'},
-            status=status.HTTP_400_BAD_REQUEST)
+                {'error': 'Only submitted logs can be marked as reviewed.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
         comment_text = request.data.get('comment', '')
         log.status = 'reviewed'
         log.save()
 
         ReviewComment.objects.create(
-        log=log,
-        reviewer=request.user,
-        comment=comment_text,
-        action='reviewed'
-    )
+            log=log,
+            reviewer=request.user,
+            comment=comment_text,
+            action='reviewed'
+        )
         return Response({'message': f'Week {log.week_number} log marked as reviewed.'}, status=status.HTTP_200_OK)
+
 
 class EvaluationViewset(viewsets.ModelViewSet):
     queryset = Evaluation.objects.all()
@@ -262,11 +269,12 @@ class EvaluationCriteriaViewset(viewsets.ModelViewSet):
         return EvaluationCriteria.objects.none()
 
     def create(self, request, *args, **kwargs):
-        placement = request.data.get('placement')
-        existing = Evaluation.objects.filter(placement=placement).exists()
+        log_id = request.data.get('log')
+        existing = EvaluationCriteria.objects.filter(log_id=log_id).exists()
 
         if existing:
-            serializer = self.get_serializer(existing, data=request.data, partial=False)
+            serializer = self.get_serializer(
+                existing, data=request.data, partial=False)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

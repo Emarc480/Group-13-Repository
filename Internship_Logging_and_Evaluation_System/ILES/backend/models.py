@@ -99,6 +99,11 @@ class EvaluationCriteria(models.Model):
     placement = models.ForeignKey(
         InternshipPlacement, on_delete=models.CASCADE, related_name='evaluation_criteria',
         default=None, null=True, blank=True)
+    log = models.OneToOneField(
+        WeeklyLog, on_delete=models.CASCADE, related_name='evaluation_criteria',
+        default=None, null=True, blank=True
+    )
+
     punctuality = models.PositiveBigIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         default=1)
