@@ -98,7 +98,7 @@ function AcademicSup() {
             await axios.post(
                 `${API_URL}criteria/`,
                 {
-                    placement: evaluationLog.placement,
+                    log: evaluationLog.placement,
                     ...evaluationData,
                     is_finalized: finalize,
                 },
@@ -111,10 +111,7 @@ function AcademicSup() {
             );
             console.log("successfully submitted evaluation:", evaluationData);
             setEvaluationLog(null);
-
             fetchLogs();
-
-
         } catch (err) {
             setError("Failed to save evaluation.");
             setTimeout(() => setError(null), 4000);
@@ -198,9 +195,15 @@ function AcademicSup() {
                                             <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>
                                                 History
                                             </button>
-                                            <button onClick={() => openEvaluation(log)} style={btnStyle("#5bc0de", "sm")}>
-                                                Evaluate
-                                            </button>
+                                            {!log.evaluation_finalized ? (
+                                                <button onClick={() => openEvaluation(log)} style={btnStyle("#5bc0de", "sm")}>
+                                                    Evaluate
+                                                </button>
+                                            ) : (
+                                                <span style={{ fontSize: "0.75rem", color: "#5cb85c", fontWeight: "bold", alignSelf: "center" }}>
+                                                    Score: {log.evaluation_score !== null ? log.evaluation_score.toFixed(2) : "N/A"}
+                                                </span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
@@ -229,9 +232,15 @@ function AcademicSup() {
                                         <td style={tdStyle}>{statusBadge(log.status)}</td>
                                         <td style={tdStyle}>
                                             <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>History</button>
-                                            <button onClick={() => openEvaluation(log)} style={btnStyle("#5bc0de", "sm")}>
-                                                Evaluate
-                                            </button>
+                                            {!log.evaluation_finalized ? (
+                                                <button onClick={() => openEvaluation(log)} style={btnStyle("#5bc0de", "sm")}>
+                                                    Evaluate
+                                                </button>
+                                            ) : (
+                                                <span style={{ fontSize: "0.75rem", color: "#5cb85c", fontWeight: "bold", alignSelf: "center" }}>
+                                                    Score: {log.evaluation_score !== null ? log.evaluation_score.toFixed(2) : "N/A"}
+                                                </span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
@@ -306,14 +315,18 @@ function AcademicSup() {
 
                         <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
                             {[
-                                ["punctuality", "Punctuality"],
-                                ["technical_skills", "Technical Skills"],
-                                ["communication", "Communication"],
-                                ["initiative", "Initiative"]
-                            ].map(([key, label]) => (
+                                ["punctuality", "Punctuality", "20%"],
+                                ["technical_skills", "Technical Skills", "25%"],
+                                ["communication", "Communication", "25%"],
+                                ["initiative", "Initiative", "30%"]
+                            ].map(([key, label, weight]) => (
                                 <div key={key}>
-                                    <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>{label}</label>
-
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                                        <label style={{ fontWeight: "500" }}>{label}</label>
+                                        <span style={{ fontSize: "0.85rem", color: "#337ab7" }}>
+                                            {evaluationData[key]} / 10 &nbsp;
+                                        </span>
+                                    </div>
                                     <input
                                         type="range"
                                         min="1"
