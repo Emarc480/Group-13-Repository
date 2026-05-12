@@ -44,9 +44,9 @@ function WorkplaceSup() {
   };
 
   const openReview = (log) => {
-    setReviewLog(log);
-    setModalAction("null");
+    setModalAction(null);
     setComment("");
+    setReviewLog(log);
   }
 
 
@@ -204,7 +204,7 @@ function WorkplaceSup() {
       {/* ── Review Modal ── */}
       {reviewLog && (
         <div style={overlayStyle}>
-          <div style={{ ...modalStyle, width: "620px" }}>
+          <div style={reviewModalStyle}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h3 style={{ margin: 0 }}>
                 Week {reviewLog.week_number} Log - {reviewLog.placement}
@@ -252,8 +252,8 @@ function WorkplaceSup() {
                 <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
                   <button
                     onClick={handleAction}
-                    disabled={submitting} s
-                    tyle={btnStyle(modalAction === "approve" ? "#5cb85c" : "#d9534f")}
+                    disabled={submitting} 
+                    style={btnStyle(modalAction === "approve" ? "#5cb85c" : "#d9534f")}
                   >
                     {submitting
                       ? "Submitting..."
@@ -338,6 +338,10 @@ const overlayStyle = {
 const modalStyle = {
   background: "#fff", borderRadius: "8px", padding: "28px",
   width: "500px", maxWidth: "90%", boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+};
+const reviewModalStyle = {
+  background: "#fff", borderRadius: "8px", padding: "28px",
+  width: "600px", maxWidth: "90%", boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
 };
 
 export default WorkplaceSup;
