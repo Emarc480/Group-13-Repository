@@ -261,6 +261,18 @@ class EvaluationCriteriaViewset(viewsets.ModelViewSet):
 
         return EvaluationCriteria.objects.none()
 
+    def create(self, request, *args, **kwargs):
+        placement = request.data.get('placement')
+        existing = Evaluation.objects.filter(placement=placement).exists()
+
+        if existing:
+            serializer = self.get_serializer(existing, data=request.data, partial=False)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return super().create(request, *args, **kwargs)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

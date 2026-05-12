@@ -98,7 +98,7 @@ function AcademicSup() {
             await axios.post(
                 `${API_URL}criteria/`,
                 {
-                    placement: evaluationLog.placement_id,
+                    placement: evaluationLog.placement,
                     ...evaluationData,
                     is_finalized: finalize,
                 },
@@ -111,9 +111,9 @@ function AcademicSup() {
             );
             console.log("successfully submitted evaluation:", evaluationData);
             setEvaluationLog(null);
-            
 
-            
+            fetchLogs();
+
 
         } catch (err) {
             setError("Failed to save evaluation.");
