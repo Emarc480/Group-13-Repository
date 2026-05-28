@@ -121,15 +121,17 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
                 {'error': 'Only draft logs can be submitted.'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = self.get_serializer(
-            weekly_log, data={'status': 'submitted'}, partial=True)
-        serializer.is_valid(raise_exception=True)
+        if weekly_log.deadline and timezone.now().date() > weekly_log.deadline:
+            return Response(
+                {'error': f'Submission deadline has passed. Deadline was {weekly_log.deadline}.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
         weekly_log.status = 'submitted'
         weekly_log.submitted_at = timezone.now()
         weekly_log.save()
-        return Response({'message': f'Weekly log {weekly_log.week_number} submitted successfully.'},
-                        status=status.HTTP_200_OK)
+        return Response(
+            {'message': f'Weekly log {weekly_log.week_number} submitted successfully.'},
+            status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def recall(self, request, pk=None):

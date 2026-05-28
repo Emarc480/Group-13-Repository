@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from .models import CustomUser, InternshipPlacement, WeeklyLog
@@ -9,7 +8,6 @@ class ILESTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-        # Create student user
         self.student = CustomUser.objects.create_user(
             username='teststudent',
             password='Test1234!',
@@ -19,7 +17,6 @@ class ILESTestCase(TestCase):
             last_name='Student'
         )
 
-        # Create workplace supervisor
         self.supervisor = CustomUser.objects.create_user(
             username='testsupervisor',
             password='Test1234!',
@@ -29,7 +26,6 @@ class ILESTestCase(TestCase):
             last_name='Supervisor'
         )
 
-        # Create admin
         self.admin = CustomUser.objects.create_user(
             username='testadmin',
             password='Test1234!',
@@ -39,7 +35,6 @@ class ILESTestCase(TestCase):
             last_name='Admin'
         )
 
-        # Create internship placement
         self.placement = InternshipPlacement.objects.create(
             student=self.student,
             student_no='2022/HD07/1234',
@@ -69,7 +64,7 @@ class ILESTestCase(TestCase):
             'password': 'Test1234!'
         }, format='json')
         return response.data['access']
-    
+
     # Test 1 - Register
     def test_user_registration(self):
         response = self.client.post('/api/auth/register/', {
@@ -164,16 +159,14 @@ class ILESTestCase(TestCase):
     def test_cannot_submit_after_deadline(self):
         token = self.get_student_token()
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
-        # Create a log for week 1 which deadline has passed
         log = WeeklyLog.objects.create(
             placement=self.placement,
-            week_number=1,
+            week_number=10,
             activities='Late submission.',
-            status='draft'
+            status='draft',
+            deadline=date.today() - timedelta(days=1)
         )
-        response = self.client.patch(f'/api/logs/{log.id}/', {
-            'status': 'submitted'
-        }, format='json')
+        response = self.client.post(f'/api/logs/{log.id}/submit/')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     # Test 9 - Permission check
