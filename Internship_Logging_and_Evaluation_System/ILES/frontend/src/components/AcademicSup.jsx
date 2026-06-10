@@ -14,6 +14,7 @@ function AcademicSup() {
     const [successMsg, setSuccessMsg] = useState(null);
 
     const [selectedLog, setSelectedLog] = useState(null);
+    const [viewMode, setViewMode] = useState("detail");
     const [comment, setComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
@@ -49,6 +50,24 @@ function AcademicSup() {
         setSuccessMsg(msg);
         setTimeout(() => setSuccessMsg(null), 3000);
     };
+
+    const openReview = (log) => {
+        setViewMode("detail");
+        setComment("");
+        setEvaluationData({
+            punctuality: 1,
+            technical_skills: 1,
+            communication: 1,
+            initiative: 1
+        });
+        setReviewLog(log);
+    }
+
+    const closeReview = () => {
+        setReviewLog(null);
+        setViewMode("detail");
+        setComment("");
+    }
 
     const handleReview = async () => {
         setSubmitting(true);
@@ -98,7 +117,7 @@ function AcademicSup() {
             await axios.post(
                 `${API_URL}criteria/`,
                 {
-                    log: evaluationLog.placement,
+                    log: reviewLog.id,
                     ...evaluationData,
                     is_finalized: finalize,
                 },
@@ -163,7 +182,6 @@ function AcademicSup() {
                                 <tr style={{ background: "#f5f5f5" }}>
                                     <th style={thStyle}>Placement</th>
                                     <th style={thStyle}>Week</th>
-                                    <th style={thStyle}>Activities</th>
                                     <th style={thStyle}>Status</th>
                                     <th style={thStyle}>Submitted At</th>
                                     <th style={thStyle}>Actions</th>
@@ -175,11 +193,6 @@ function AcademicSup() {
                                         <td style={tdStyle}>{log.placement}</td>
                                         <td style={tdStyle}>Week {log.week_number}</td>
                                         <td style={tdStyle}>
-                                            <span style={{ display: "block", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                                {log.activities}
-                                            </span>
-                                        </td>
-                                        <td style={tdStyle}>
                                             {statusBadge(log.status)}
                                             {log.evaluation_finalized && (
                                                 <div style={{ marginTop: "6px", fontSize: "0.75rem", color: "#5cb85c", fontWeight: "bold" }}>
@@ -188,20 +201,16 @@ function AcademicSup() {
                                             )}
                                         </td>
                                         <td style={tdStyle}>{log.submitted_at ? new Date(log.submitted_at).toLocaleString() : "—"}</td>
-                                        <td style={{ ...tdStyle, display: "flex", gap: "6px" }}>
-                                            <button onClick={() => { setSelectedLog(log); setComment(""); }} style={btnStyle("#9b59b6", "sm")}>
-                                                Mark Reviewed
+                                        <td style={{ ...tdStyle, display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                                            <button onClick={() => openReview(log) } style={btnStyle("#5bc0de", "sm")}>
+                                                Review
                                             </button>
                                             <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>
                                                 History
                                             </button>
-                                            {!log.evaluation_finalized ? (
-                                                <button onClick={() => openEvaluation(log)} style={btnStyle("#5bc0de", "sm")}>
-                                                    Evaluate
-                                                </button>
-                                            ) : (
+                                            {log.evaluation_finalized && (
                                                 <span style={{ fontSize: "0.75rem", color: "#5cb85c", fontWeight: "bold", alignSelf: "center" }}>
-                                                    Score: {log.evaluation_score !== null ? log.evaluation_score.toFixed(2) : "N/A"}
+                                                    score: {log.evaluation_score !== null ? Number(log.evaluation_score).toFixed(2) : "N/A"}
                                                 </span>
                                             )}
                                         </td>
@@ -229,16 +238,20 @@ function AcademicSup() {
                                     <tr key={log.id} style={{ borderBottom: "1px solid #eee" }}>
                                         <td style={tdStyle}>{log.placement}</td>
                                         <td style={tdStyle}>Week {log.week_number}</td>
-                                        <td style={tdStyle}>{statusBadge(log.status)}</td>
                                         <td style={tdStyle}>
+                                            {statusBadge(log.status)}
+                                            {log.evaluation_finalized && (
+                                                <div style={{ marginTop: "6px", fontSize: "0.75rem", color: "#5cb85c", fontWeight: "bold" }}>
+                                                    Evaluation Finalized
+                                                </div>
+                                            )}
+                                            </td>
+                                        <td style={{ ...tdStyle, display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                                            <button onClick={() => openReview(log)} style={btnStyle("#5bc0de", "sm")}>Review</button>
                                             <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>History</button>
-                                            {!log.evaluation_finalized ? (
-                                                <button onClick={() => openEvaluation(log)} style={btnStyle("#5bc0de", "sm")}>
-                                                    Evaluate
-                                                </button>
-                                            ) : (
-                                                <span style={{ fontSize: "0.75rem", color: "#5cb85c", fontWeight: "bold", alignSelf: "center" }}>
-                                                    Score: {log.evaluation_score !== null ? log.evaluation_score.toFixed(2) : "N/A"}
+                                            {log.evaluation_finalized && (
+                                                <span style={{fontsize: "0.75rem", color: "#5cb85c", fontWeight: "bold", alignSelf: "center" }}>
+                                                    score: {log.evaluation_score !== null ? Number(log.evaluation_score).toFixed(2) : "N/A"}
                                                 </span>
                                             )}
                                         </td>

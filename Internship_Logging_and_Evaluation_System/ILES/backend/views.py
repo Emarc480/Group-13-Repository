@@ -270,7 +270,7 @@ class EvaluationCriteriaViewset(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         log_id = request.data.get('log')
-        existing = EvaluationCriteria.objects.filter(log_id=log_id).exists()
+        existing = EvaluationCriteria.objects.filter(log_id=log_id).first()
 
         if existing:
             serializer = self.get_serializer(
