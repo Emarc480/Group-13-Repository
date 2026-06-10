@@ -202,7 +202,7 @@ function AcademicSup() {
                                         </td>
                                         <td style={tdStyle}>{log.submitted_at ? new Date(log.submitted_at).toLocaleString() : "—"}</td>
                                         <td style={{ ...tdStyle, display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                                            <button onClick={() => openReview(log) } style={btnStyle("#5bc0de", "sm")}>
+                                            <button onClick={() => openReview(log)} style={btnStyle("#5bc0de", "sm")}>
                                                 Review
                                             </button>
                                             <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>
@@ -245,12 +245,12 @@ function AcademicSup() {
                                                     Evaluation Finalized
                                                 </div>
                                             )}
-                                            </td>
+                                        </td>
                                         <td style={{ ...tdStyle, display: "flex", gap: "6px", flexWrap: "wrap" }}>
                                             <button onClick={() => openReview(log)} style={btnStyle("#5bc0de", "sm")}>Review</button>
                                             <button onClick={() => openHistory(log)} style={btnStyle("#777", "sm")}>History</button>
                                             {log.evaluation_finalized && (
-                                                <span style={{fontsize: "0.75rem", color: "#5cb85c", fontWeight: "bold", alignSelf: "center" }}>
+                                                <span style={{ fontsize: "0.75rem", color: "#5cb85c", fontWeight: "bold", alignSelf: "center" }}>
                                                     score: {log.evaluation_score !== null ? Number(log.evaluation_score).toFixed(2) : "N/A"}
                                                 </span>
                                             )}
@@ -263,126 +263,251 @@ function AcademicSup() {
                 </>
             )}
 
-            {/* Review Modal */}
-            {selectedLog && (
+            {/* Unified Review Modal */}
+            {reviewLog && (
                 <div style={overlayStyle}>
-                    <div style={modalStyle}>
-                        <h3>Mark Week {selectedLog.week_number} as Reviewed</h3>
-                        <p style={{ color: "#555", marginBottom: "12px" }}>Optionally add a comment.</p>
-                        <textarea
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            rows={4}
-                            placeholder="Enter comment..."
-                            style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem", boxSizing: "border-box" }}
-                        />
-                        <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
-                            <button onClick={handleReview} disabled={submitting} style={btnStyle("#9b59b6")}>
-                                {submitting ? "Processing..." : "Confirm Review"}
-                            </button>
-                            <button onClick={() => setSelectedLog(null)} style={btnStyle("#aaa")}>Cancel</button>
+                    <div style={{ ...modalStyle, width: "600px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                            <h3 style={{ margin: 0 }}>
+                                Week {reviewLog.week_number} Log - {reviewLog.placement}
+                            </h3>
+                            {statusBadge(reviewLog.status)}
                         </div>
+
+                        {/* Header to be shown in every viewMode */}
+                        {viewMode === "detail" && (
+                            <>
+                                <div style={logSection}>
+                                    <p style={logLabel}>Submitted</p>
+                                    <p style={logValue}>
+                                        {reviewLog.submitted_at ? new Date(reviewLog.submitted_at).toLocaleString() : "—"}
+                                    </p>
+                                </div>
+
+                                <div style={logsection}>
+                                    <p style={logLabel}>Activities / Tasks Completed</p>
+                                    <p style={{ ...logValue, whiteSpace: "pre-wrap" }}>
+                                        {reviewLog.activities || "—"}
+                                    </p>
+                                </div>
+
+                                {reviewLog.evaluation_finalized && (
+                                    <div style={logSection}>
+                                        <p style={logLabel}>Evaluation Score</p>
+                                        <p style={{ ...logValue, color: "#5cb85c", fontWeight: "bold" }}>
+                                            {reviewLog.evaluation_score !== null ? Number(reviewLog.evaluation_score).toFixed(2) : "N/A"} / 10
+                                        </p>
+                                    </div>
+                                )}
+
+                                <hr style={{ border: "none", borderTop: "1px solid #eee", margin: "16px 0" }} />
+
+                                <div>
+                                    {reviewLog.status == "submitted" && (
+                                        <button onClick={() => setViewMode("review")} style={btnStyle("#5cb85c")}>
+                                            Mark as Reviewed
+                                        </button>
+                                    )}
+                                    {/* Evaluated hidden once finalized */}
+                                    {!reviewLog.evaluatin_finalized && (
+                                        <button onClick={closeReview} style={btnStyle("#5bc0de")}>
+                                            Evaluate
+                                        </button>
+                                    )}
+                                    <button onClick={closeReview} style={btnStyle("#aaa")}>
+                                        Close
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {/* viewMode: review, mark reviewed comment box */}
+                        {viewMode === "review" && (
+                            <div>
+                                <p style={{ color: "#555", marginBottom: "12px" }}>Optionally add a comment.</p>
+                                <textarea
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    rows={4}
+                                    placeholder="Enter comment..."
+                                    style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem", boxSizing: "border-box" }}
+                                />
+                                <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
+                                    <button onClick={handleReview} disabled={submitting} style={btnStyle("#9b59b6")}>
+                                        {submitting ? "Processing..." : "Confirm Review"}
+                                    </button>
+                                    <button onClick={() => setViewMode("detail")} style={btnStyle("#aaa")}>
+                                        Back
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Evaluate scoring sliders */}
+                        {viewMode === "evaluate" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                {[
+                                    ["punctuality", "Punctuality", "20%"],
+                                    ["technical_skills", "Technical Skills", "25%"],
+                                    ["communication", "Communication", "25%"],
+                                    ["initiative", "Initiative", "30%"]
+                                ].map(([key, label, weight]) => (
+                                    <div key={key}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                                            <label style={{ fontWeight: "500" }}>{label}</label>
+                                            <span style={{ fontSize: "0.85rem", color: "#337ab7" }}>
+                                                {evaluationData[key]} / 10 &nbsp;
+                                                <span style={{ color: "#999", fontSize: "0.75rem" }}>({weight})</span>
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="10"
+                                            value={evaluationData[key]}
+                                            onChange={(e) => setEvaluationData({ ...evaluationData, [key]: Number(e.target.value) })}
+                                            style={{ width: "100%" }}
+                                        />
+                                    </div>
+                                ))}
+
+                                <div style={{ fontWeight: "bold", marginTop: "8px", borderRadius: "4px", padding: "8px", background: "#f0f0f0" }}>
+                                    Total Score: {totalScore.toFixed(2)}
+                                </div>
+
+                                <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+                                    <button
+                                        onClick={() => handleEvaluationSubmit(false)}
+                                        disabled={savingEvaluation}
+                                        style={btnStyle("#5bc0de")}
+                                    >
+                                        Save Draft
+                                    </button>
+                                    <button
+                                        onClick={() => handleEvaluationSubmit(true)}
+                                        disabled={savingEvaluation}
+                                        style={btnStyle("#5cb85c")}
+                                    >
+                                        Finalize
+                                    </button>
+                                    <button onClick={() => setViewMode("detail")} style={btnStyle("#aaa")}>
+                                        Back
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
 
             {/* History Modal */}
-            {historyLog && (
-                <div style={overlayStyle}>
-                    <div style={modalStyle}>
-                        <h3>Review History — Week {historyLog.week_number}</h3>
-                        {history.length === 0 ? (
-                            <p style={{ color: "#888" }}>No review history yet.</p>
-                        ) : (
-                            <table style={{ ...tableStyle, marginTop: "12px" }}>
-                                <thead>
-                                    <tr style={{ background: "#f5f5f5" }}>
-                                        <th style={thStyle}>Action</th>
-                                        <th style={thStyle}>Reviewer</th>
-                                        <th style={thStyle}>Comment</th>
-                                        <th style={thStyle}>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {history.map(h => (
-                                        <tr key={h.id} style={{ borderBottom: "1px solid #eee" }}>
-                                            <td style={tdStyle}>{statusBadge(h.action)}</td>
-                                            <td style={tdStyle}>{h.reviewer_name}</td>
-                                            <td style={tdStyle}>{h.comment || "—"}</td>
-                                            <td style={tdStyle}>{new Date(h.created_at).toLocaleString()}</td>
+            {
+                historyLog && (
+                    <div style={overlayStyle}>
+                        <div style={modalStyle}>
+                            <h3>Review History — Week {historyLog.week_number}</h3>
+                            {history.length === 0 ? (
+                                <p style={{ color: "#888" }}>No review history yet.</p>
+                            ) : (
+                                <table style={{ ...tableStyle, marginTop: "12px" }}>
+                                    <thead>
+                                        <tr style={{ background: "#f5f5f5" }}>
+                                            <th style={thStyle}>Action</th>
+                                            <th style={thStyle}>Reviewer</th>
+                                            <th style={thStyle}>Comment</th>
+                                            <th style={thStyle}>Date</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                        <button onClick={() => setHistoryLog(null)} style={{ ...btnStyle("#aaa"), marginTop: "16px" }}>Close</button>
+                                    </thead>
+                                    <tbody>
+                                        {history.map(h => (
+                                            <tr key={h.id} style={{ borderBottom: "1px solid #eee" }}>
+                                                <td style={tdStyle}>{statusBadge(h.action)}</td>
+                                                <td style={tdStyle}>{h.reviewer_name}</td>
+                                                <td style={tdStyle}>{h.comment || "—"}</td>
+                                                <td style={tdStyle}>{new Date(h.created_at).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                            <button onClick={() => setHistoryLog(null)} style={{ ...btnStyle("#aaa"), marginTop: "16px" }}>Close</button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Evaluation Modal */}
-            {evaluationLog && (
-                <div style={overlayStyle}>
-                    <div style={modalStyle}>
-                        <h3>Evaluate Week {evaluationLog.week_number}</h3>
+            {
+                evaluationLog && (
+                    <div style={overlayStyle}>
+                        <div style={modalStyle}>
+                            <h3>Evaluate Week {evaluationLog.week_number}</h3>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
-                            {[
-                                ["punctuality", "Punctuality", "20%"],
-                                ["technical_skills", "Technical Skills", "25%"],
-                                ["communication", "Communication", "25%"],
-                                ["initiative", "Initiative", "30%"]
-                            ].map(([key, label, weight]) => (
-                                <div key={key}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                                        <label style={{ fontWeight: "500" }}>{label}</label>
-                                        <span style={{ fontSize: "0.85rem", color: "#337ab7" }}>
-                                            {evaluationData[key]} / 10 &nbsp;
-                                        </span>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
+                                {[
+                                    ["punctuality", "Punctuality", "20%"],
+                                    ["technical_skills", "Technical Skills", "25%"],
+                                    ["communication", "Communication", "25%"],
+                                    ["initiative", "Initiative", "30%"]
+                                ].map(([key, label, weight]) => (
+                                    <div key={key}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                                            <label style={{ fontWeight: "500" }}>{label}</label>
+                                            <span style={{ fontSize: "0.85rem", color: "#337ab7" }}>
+                                                {evaluationData[key]} / 10 &nbsp;
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="10"
+                                            value={evaluationData[key]}
+                                            onChange={(e) => setEvaluationData({ ...evaluationData, [key]: Number(e.target.value) })}
+                                            style={{ width: "100%" }}
+                                        />
                                     </div>
-                                    <input
-                                        type="range"
-                                        min="1"
-                                        max="10"
-                                        value={evaluationData[key]}
-                                        onChange={(e) => setEvaluationData({ ...evaluationData, [key]: Number(e.target.value) })}
-                                        style={{ width: "100%" }}
-                                    />
+                                ))}
+                                <div style={{ fontWeight: "bold", marginTop: "8px", borderRadius: "4px", padding: "8px", background: "#f0f0f0" }}>Total Score: {totalScore.toFixed(2)}</div>
+
+                                <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
+                                    <button
+                                        onClick={() => handleEvaluationSubmit(false)}
+                                        disabled={savingEvaluation}
+                                        style={btnStyle("#5bc0de")}
+                                    >
+                                        Save Draft
+                                    </button>
+
+                                    <button
+                                        onClick={() => handleEvaluationSubmit(true)}
+                                        disabled={savingEvaluation}
+                                        style={btnStyle("#5cb85c")}
+                                    >
+                                        Finalize
+                                    </button>
+
+                                    <button
+                                        onClick={() => setEvaluationLog(null)}
+                                        style={btnStyle("#aaa")}
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
-                            ))}
-                            <div style={{ fontWeight: "bold", marginTop: "8px", borderRadius: "4px", padding: "8px", background: "#f0f0f0" }}>Total Score: {totalScore.toFixed(2)}</div>
-
-                            <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
-                                <button
-                                    onClick={() => handleEvaluationSubmit(false)}
-                                    disabled={savingEvaluation}
-                                    style={btnStyle("#5bc0de")}
-                                >
-                                    Save Draft
-                                </button>
-
-                                <button
-                                    onClick={() => handleEvaluationSubmit(true)}
-                                    disabled={savingEvaluation}
-                                    style={btnStyle("#5cb85c")}
-                                >
-                                    Finalize
-                                </button>
-
-                                <button
-                                    onClick={() => setEvaluationLog(null)}
-                                    style={btnStyle("#aaa")}
-                                >
-                                    Cancel
-                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
+
+const logSection = { marginBottom: "12px" };
+const Loglabel = {
+    fontSize: "0.75rem", fontWeight: "600", color: "#888",
+    textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 2px"
+};
+const logValue = { fontSize: "0.95rem", color: "#333", margin: 0 };
 
 const btnStyle = (bg, size = "md") => ({
     background: bg, color: "#fff", border: "none",
