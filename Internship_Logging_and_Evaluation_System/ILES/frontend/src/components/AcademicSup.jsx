@@ -13,7 +13,7 @@ function AcademicSup() {
     const [error, setError] = useState(null);
     const [successMsg, setSuccessMsg] = useState(null);
 
-    const [selectedLog, setSelectedLog] = useState(null);
+    const [reviewLog, setReviewLog] = useState(null);
     const [viewMode, setViewMode] = useState("detail");
     const [comment, setComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
@@ -284,7 +284,7 @@ function AcademicSup() {
                                     </p>
                                 </div>
 
-                                <div style={logsection}>
+                                <div style={logSection}>
                                     <p style={logLabel}>Activities / Tasks Completed</p>
                                     <p style={{ ...logValue, whiteSpace: "pre-wrap" }}>
                                         {reviewLog.activities || "—"}
@@ -309,8 +309,8 @@ function AcademicSup() {
                                         </button>
                                     )}
                                     {/* Evaluated hidden once finalized */}
-                                    {!reviewLog.evaluatin_finalized && (
-                                        <button onClick={closeReview} style={btnStyle("#5bc0de")}>
+                                    {!reviewLog.evaluation_finalized && (
+                                        <button onClick={() => setViewMode("evaluate")} style={btnStyle("#5bc0de")}>
                                             Evaluate
                                         </button>
                                     )}
@@ -503,7 +503,7 @@ function AcademicSup() {
 }
 
 const logSection = { marginBottom: "12px" };
-const Loglabel = {
+const logLabel = {
     fontSize: "0.75rem", fontWeight: "600", color: "#888",
     textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 2px"
 };
