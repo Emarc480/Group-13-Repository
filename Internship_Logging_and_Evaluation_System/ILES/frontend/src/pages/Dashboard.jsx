@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { logout } from '../services/authService';
-import { getMe } from '../services/authService';
-
+import { logout, getMe } from '../services/authService';
 import AcademicSup from "../components/AcademicSup";
 import InternshipAdmin from "../components/InternshipAdmin";
 import WorkplaceSup from "../components/WorkplaceSup";
 import StudentDashboard from "../components/StudentDashboard";
+import NotificationBell from "../components/NotificationBell";
 
 function Dashboard() {
   const navigate = useNavigate();
   const [role, setRole] = useState(null);
+
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
@@ -21,24 +20,16 @@ function Dashboard() {
         console.error("Error fetching user role:", error);
       }
     };
-
     fetchUserRole();
   }, []);
 
-  console.log("User role:", role);
-
   const RenderView = () => {
     switch (role) {
-      case 'academic_supervisor':
-        return <AcademicSup />;
-      case 'intern_admin':
-        return <InternshipAdmin />;
-      case 'workplace_supervisor':
-        return <WorkplaceSup />;
-      case 'student':
-        return <StudentDashboard />;
-      default:
-        return <p>Invalid role</p>;
+      case 'academic_supervisor': return <AcademicSup />;
+      case 'intern_admin': return <InternshipAdmin />;
+      case 'workplace_supervisor': return <WorkplaceSup />;
+      case 'student': return <StudentDashboard />;
+      default: return <p>Invalid role</p>;
     }
   };
 
@@ -52,24 +43,39 @@ function Dashboard() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }} >
-
-      {/* Sidebar */}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      
+      {/* Top Bar */}
       <div style={{
-        width: '150px',
-        padding: '20px',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        borderRight: '1px solid #ccc'
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        padding: '10px 20px',
+        borderBottom: '1px solid #ccc',
+        background: '#f9f9f9'
       }}>
-        <button>Profile</button>
-        <button onClick={() => { handleLogout() }}>Logout</button>
+        <NotificationBell />
       </div>
 
-      {/* Main Content */}
-      <div style={{ flex: 1, padding: '20px' }}>
-        {RenderView()}
+      {/* Body */}
+      <div style={{ display: 'flex', flex: 1 }}>
+        {/* Sidebar */}
+        <div style={{
+          width: '150px',
+          padding: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          borderRight: '1px solid #ccc'
+        }}>
+          <button>Profile</button>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+
+        {/* Main Content */}
+        <div style={{ flex: 1, padding: '20px' }}>
+          {RenderView()}
+        </div>
       </div>
     </div>
   );
