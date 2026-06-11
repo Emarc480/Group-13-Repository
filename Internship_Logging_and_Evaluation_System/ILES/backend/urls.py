@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     CustomTokenObtainPairView,
     RegisterView,
+    UserListView,
     logout_view,
     me,
     InternshipPlacementViewset,
@@ -25,6 +26,7 @@ urlpatterns = [
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/logout/', logout_view, name='logout'),
     path('auth/me/', me, name='me'),
+    path('auth/users/', UserListView.as_view(), name='user-list'),
     path('', include(router.urls)),
     path('dashboard-summary/', dashboard_summary, name='dashboard-summary'),
 ]

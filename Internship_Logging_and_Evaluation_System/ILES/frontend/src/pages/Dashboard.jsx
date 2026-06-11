@@ -42,9 +42,13 @@ function Dashboard() {
     }
   };
 
+  const handleProfile = () => {
+    navigate('/profile');
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      
+
       {/* Top Bar */}
       <div style={{
         display: 'flex',
@@ -68,7 +72,7 @@ function Dashboard() {
           gap: '10px',
           borderRight: '1px solid #ccc'
         }}>
-          <button>Profile</button>
+          <button onClick={handleProfile}>Profile</button>
           <button onClick={handleLogout}>Logout</button>
         </div>
 
