@@ -162,3 +162,9 @@ class ReviewCommentSerializer(serializers.ModelSerializer):
             return f"{obj.reviewer.first_name} {obj.reviewer.last_name}"
 
         return "Unknown"
+
+
+class UserSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'first_name', 'last_name', 'role']

@@ -17,7 +17,8 @@ from .serializers import (
     EvaluationSerializer,
     EvaluationCriteriaSerializer,
     CustomTokenObtainPairSerializer,
-    ReviewCommentSerializer
+    ReviewCommentSerializer,
+    UserSummarySerializer
 )
 
 
@@ -344,3 +345,15 @@ def dashboard_summary(request):
         })
 
     return Response({'error': 'Unknown role.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserListView(generics.ListAPIView):
+    serializer_class = UserSummarySerializer
+    permission_classes = [IsInternAdmin]
+
+    def get_queryset(self):
+        role = self.request.query_params.get('role')
+        qs = CustomUser.objects.all().order_by('username')
+        if role:
+            qs = qs.filter(role=role)
+        return qs
