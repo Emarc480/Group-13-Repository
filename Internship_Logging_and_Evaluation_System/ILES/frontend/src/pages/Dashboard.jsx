@@ -25,7 +25,6 @@ function Dashboard() {
     fetchUserRole();
   }, []);
 
-  console.log("User role:", role);
 
   const RenderView = () => {
     switch (role) {
@@ -51,6 +50,10 @@ function Dashboard() {
     }
   };
 
+  const handleProfile = () => {
+    navigate('/profile');
+  };
+
   return (
     <div style={{ display: 'flex', height: '100vh' }} >
 
@@ -63,7 +66,7 @@ function Dashboard() {
         gap: '10px',
         borderRight: '1px solid #ccc'
       }}>
-        <button>Profile</button>
+        <button onClick={handleProfile}>Profile</button>
         <button onClick={() => { handleLogout() }}>Logout</button>
       </div>
 
