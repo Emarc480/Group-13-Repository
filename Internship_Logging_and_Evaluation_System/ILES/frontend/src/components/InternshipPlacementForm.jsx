@@ -8,7 +8,7 @@ const InternshipPlacementForm = () => {
         company_name:  '',
         start_date: '',
         end_date: '',
-        workplacesupervisor: '',
+        workplace_supervisor: '',
     });
 
     const [error, setError] = useState(null);
