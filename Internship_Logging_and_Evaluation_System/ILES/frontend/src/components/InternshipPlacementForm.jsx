@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const InternshipPlacementForm = () => {
+const API_URL = "https://127.0.0.1:8000/api/";
+const authHeaders = () => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+});
+
+const InternshipPlacementForm = ({ editingPlacement, onSuccess, onCancel }) => {
     const [formData, setFormData] = useState({
         student: '',
         student_no: '',
@@ -38,8 +43,21 @@ const InternshipPlacementForm = () => {
         fetchUsers();
     }, []);
 
+    useEffect(() => {
+        if (editingPlacement) {
+            setFormData({
+                student: editingPlacement.student || "",
+                student_no: editingPlacement.student_no || "",
+                company_name: editingPlacement.company_name || "",
+                start_date: editingPlacement.start_date || "",
+                end_date: editingPlacement.end_date || "",
+                workplace_supervisor: editingPlacement.workplace_supervisor || "",
+            });
+        }
+    }, [editingPlacement]);
+
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.company_name]: e.target.value });
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     }
 
     const handleSubmit = async (e) => {
@@ -48,19 +66,20 @@ const InternshipPlacementForm = () => {
         setSubmitting(true);
 
         try {
-            await axios.post(`${API_URL}placements/`, formData, authHeaders());
-            alert("Placement successful!");
-
-            setFormData({
-                student: '',
-                student_no: '',
-                company_name: '',
-                start_date: '',
-                end_date: '',
-                workplace_supervisor: '',
-            })
+            if (editingPlacement) {
+                await axios.put(`${API_URL}placements/${editingPlacement.id}/`, formData, authHeaders());
+                onSuccess("Placement updated.");
+            } else {
+                await axios.post(`${API_URL}placements/`, formData, authHeaders());
+                onSuccess("Placement created.");
+            }
         } catch (err) {
-            setError(err.response?.data);
+            const data = err.response?.data;
+            if (typeof data === "object") {
+                setError(Object.values(data).flat().join(" "));
+            } else {
+                setError("Something went wrong.");
+            }
         } finally {
             setSubmitting(false);
         }
@@ -72,78 +91,121 @@ const InternshipPlacementForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' }}>
-            <h2>Create New Placement</h2>
-            {error && <div style={{ color: 'red' }}>{JSON.stringify(error)}</div>}
+        <div>
+            <h3>{editingPlacement ? "Edit Placement" : "Create New Placement"}</h3>
 
-            <label>Student</label>
-            <select
-                name="student"
-                value={formData.student}
-                onChange={handleChange}
-                required
-                disabled={loadingUsers}
-            >
-                <option value="">Select a student</option>
-                {students.map((student) => (
-                    <option key={student.id} value={student.id}>
-                        {userLabel(student)}
-                    </option>
-                ))}
-            </select>
+            {error && (
+                <div style={{ background: "#f2dede", color: "#a94442", padding: "8px 12px", borderRadius: "4px", marginBottom: "10px" }}>
+                    {error}
+                </div>
+            )}
 
-            <label>Student Number</label>
-            <input
-                type="text"
-                placeholder="Student Number"
-                value={formData.student_no}
-                onChange={handleChange}
-                required
-            />
+            <form onSubmit={handleSubmit}>
+                <div style={twoCol}>
+                    <div style={fieldStyle}>
+                        <label>Student</label>
+                        <select
+                            name="student"
+                            value={formData.student}
+                            onChange={handleChange}
+                            required
+                            disabled={loadingUsers}
+                            style={inputStyle}
+                        >
+                            <option value="">-- Select a student --</option>
+                            {students.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                    {userLabel(s)}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div style={fieldStyle}>
+                        <label>Student Number</label>
+                        <input
+                            type="text"
+                            name="student_no"
+                            value={formData.student_no}
+                            onChange={handleChange}
+                            style={inputStyle}
+                        />
+                    </div>
+                </div>
 
-            <label>Company Name</label>
-            <input type="text" placeholder="Company Name"
-                value={formData.company_name}
-                onChange={handleChange}
-                required
-            />
+                <div style={fieldStyle}>
+                    <label>Company Name</label>
+                    <input
+                        type="text"
+                        name="company_Name"
+                        value={formData.company_name}
+                        onChange={handleChange}
+                        required
+                        style={inputStyle}
+                    />
+                </div>
 
-            <label>Start Date</label>
-            <input
-                type="date"
-                value={formData.start_date}
-                onChange={handleChange}
-                required
-            />
+                <div style={twoCol}>
+                    <div style={fieldStyle}>
+                        <label>Start Date</label>
+                        <input
+                            type="date"
+                            name="start_date"
+                            value={formData.start_date}
+                            onChange={handleChange}
+                            required
+                            style={inputStyle}
+                        />
+                    </div>
+                    <div style={fieldStyle}>
+                        <label>End Date</label>
+                        <input
+                            type="date"
+                            name="end_date"
+                            value={formData.end_date}
+                            onChange={handleChange}
+                            required
+                            style={inputStyle}
+                        />
+                    </div>
+                </div>
 
-            <label>End Date</label>
-            <input
-                type="date"
-                value={formData.end_date}
-                onChange={handleChange}
-                required
-            />
+                <div style={fieldStyle}>
+                    <label>Workplace Supervisor</label>
+                    <select
+                        name="workplace_supervisor"
+                        value={formData.workplace_supervisor}
+                        onChange={handleChange}
+                        disabled={loadingUsers}
+                        style={inputStyle}
+                    >
+                        <option value="">-- None --</option>
+                        {supervisors.map((s) => (
+                            <option key={s.id} value={s.id}>
+                                {userLabel(s)}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-            <label>Workplace Supervisor</label>
-            <select
-                name="workplace_supervisor"
-                value={formData.workplace_supervisor}
-                onChange={handleChange}
-                disabled={loadingUsers}
-            >
-                <option value="">-- None --</option>
-                {supervisors.map((s) => (
-                    <option key={s.id} value={s.id}>
-                        {userLabel(s)}
-                    </option>
-                ))}
-            </select>
-
-            <button type="submit" disabled={submitting}>
-                {submitting ? "Assigning..." : "Assign Internship"}
-            </button>
-        </form>
+                <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
+                    <button type="submit" disabled={submitting} style={btnStyle("#5cb85c")}>
+                        {submitting ? "Saving.." : editingPlacement ? "Update" : "Create"}
+                    </button>
+                    <button type="button" onClick={onCancel} style={btnStyle("#aaa")}>
+                        cancel
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 };
+
+const fieldStyle = { marginBottom: "12px", display: "flex", flexDirection: "column", gap: "4px", flex: 1 };
+const inputStyle = { padding: "8px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem" };
+const twoCol = { display: "flex", gap: "12px" };
+const btnStyle = (bg) => ({
+    background: bg, color: "#fff", border: "none",
+    padding: "8px 18px", borderRadius: "4px", cursor: "pointer", fontSize: "0.95rem",
+});
 
 export default InternshipPlacementForm;

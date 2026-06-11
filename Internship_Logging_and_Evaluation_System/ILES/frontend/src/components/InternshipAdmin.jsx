@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import InternshipPlacementForm from "./InternshipPlacementForm";
 
 const API_URL = "http://127.0.0.1:8000/api/";
 const authHeaders = () => ({
@@ -8,7 +9,6 @@ const authHeaders = () => ({
 
 function InternshipAdmin() {
   const [placements, setPlacements] = useState([]);
-  const [users, setUsers] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,12 +17,7 @@ function InternshipAdmin() {
   // New placement form
   const [showForm, setShowForm] = useState(false);
   const [editingPlacement, setEditingPlacement] = useState(null);
-  const [formData, setFormData] = useState({
-    student: "", company_name: "", student_no: "",
-    start_date: "", end_date: "", workplace_supervisor: "",
-  });
-  const [formError, setFormError] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+  
 
   useEffect(() => {
     fetchAll();
@@ -49,52 +44,26 @@ function InternshipAdmin() {
     setTimeout(() => setSuccessMsg(null), 3000);
   };
 
-  const handleFormChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const openNew = () => {
     setEditingPlacement(null);
-    setFormData({ student: "", company_name: "", student_no: "", start_date: "", end_date: "", workplace_supervisor: "" });
-    setFormError(null);
     setShowForm(true);
   };
 
   const openEdit = (p) => {
     setEditingPlacement(p);
-    setFormData({
-      student: p.student, company_name: p.company_name, student_no: p.student_no,
-      start_date: p.start_date, end_date: p.end_date,
-      workplace_supervisor: p.workplace_supervisor || "",
-    });
-    setFormError(null);
     setShowForm(true);
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    setFormError(null);
-    setSubmitting(true);
-    try {
-      if (editingPlacement) {
-        await axios.put(`${API_URL}placements/${editingPlacement.id}/`, formData, authHeaders());
-        showSuccess("Placement updated.");
-      } else {
-        await axios.post(`${API_URL}placements/`, formData, authHeaders());
-        showSuccess("Placement created.");
-      }
-      setShowForm(false);
-      fetchAll();
-    } catch (err) {
-      const data = err.response?.data;
-      if (typeof data === "object") {
-        setFormError(Object.values(data).flat().join(" "));
-      } else {
-        setFormError("Something went wrong.");
-      }
-    } finally {
-      setSubmitting(false);
-    }
+  const handleFormSuccess = (msg) => {
+    setShowForm(false);
+    setEditingPlacement(null);
+    showSuccess(msg);
+    fetchAll();
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setEditingPlacement(null);
   };
 
   const handleDelete = async (id) => {
@@ -190,48 +159,11 @@ function InternshipAdmin() {
       {showForm && (
         <div style={overlayStyle}>
           <div style={{ ...modalStyle, width: "560px" }}>
-            <h3>{editingPlacement ? "Edit Placement" : "Create New Placement"}</h3>
-            {formError && (
-              <div style={{ background: "#f2dede", color: "#a94442", padding: "8px 12px", borderRadius: "4px", marginBottom: "10px" }}>
-                {formError}
-              </div>
-            )}
-            <form onSubmit={handleFormSubmit}>
-              <div style={twoCol}>
-                <div style={fieldStyle}>
-                  <label>Student (user ID)</label>
-                  <input type="number" name="student" value={formData.student} onChange={handleFormChange} required style={inputStyle} />
-                </div>
-                <div style={fieldStyle}>
-                  <label>Student Number</label>
-                  <input type="text" name="student_no" value={formData.student_no} onChange={handleFormChange} style={inputStyle} />
-                </div>
-              </div>
-              <div style={fieldStyle}>
-                <label>Company Name</label>
-                <input type="text" name="company_name" value={formData.company_name} onChange={handleFormChange} required style={inputStyle} />
-              </div>
-              <div style={twoCol}>
-                <div style={fieldStyle}>
-                  <label>Start Date</label>
-                  <input type="date" name="start_date" value={formData.start_date} onChange={handleFormChange} required style={inputStyle} />
-                </div>
-                <div style={fieldStyle}>
-                  <label>End Date</label>
-                  <input type="date" name="end_date" value={formData.end_date} onChange={handleFormChange} required style={inputStyle} />
-                </div>
-              </div>
-              <div style={fieldStyle}>
-                <label>Workplace Supervisor (user ID, optional)</label>
-                <input type="number" name="workplace_supervisor" value={formData.workplace_supervisor} onChange={handleFormChange} style={inputStyle} />
-              </div>
-              <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
-                <button type="submit" disabled={submitting} style={btnStyle("#5cb85c")}>
-                  {submitting ? "Saving..." : editingPlacement ? "Update" : "Create"}
-                </button>
-                <button type="button" onClick={() => setShowForm(false)} style={btnStyle("#aaa")}>Cancel</button>
-              </div>
-            </form>
+            <InternshipPlacementForm
+              placement={editingPlacement}
+              onSuccess={handleFormSuccess}
+              onCancel={handleFormCancel}
+            />
           </div>
         </div>
       )}
