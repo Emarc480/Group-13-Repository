@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = "https://127.0.0.1:8000/api/";
+const API_URL = "http://127.0.0.1:8000/api/auth/";
+const POST_URL = "http://127.0.0.1:8000/api/";
 const authHeaders = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
 });
@@ -67,10 +68,10 @@ const InternshipPlacementForm = ({ editingPlacement, onSuccess, onCancel }) => {
 
         try {
             if (editingPlacement) {
-                await axios.put(`${API_URL}placements/${editingPlacement.id}/`, formData, authHeaders());
+                await axios.put(`${POST_URL}placements/${editingPlacement.id}/`, formData, authHeaders());
                 onSuccess("Placement updated.");
             } else {
-                await axios.post(`${API_URL}placements/`, formData, authHeaders());
+                await axios.post(`${POST_URL}placements/`, formData, authHeaders());
                 onSuccess("Placement created.");
             }
         } catch (err) {
@@ -136,7 +137,7 @@ const InternshipPlacementForm = ({ editingPlacement, onSuccess, onCancel }) => {
                     <label>Company Name</label>
                     <input
                         type="text"
-                        name="company_Name"
+                        name="company_name"
                         value={formData.company_name}
                         onChange={handleChange}
                         required
