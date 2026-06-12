@@ -1,0 +1,160 @@
+.authPage {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /*background: #eef2f7;*/
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 24px;
+}
+
+.loginForm,
+.SignUpForm {
+    background: #eef2f7;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(30, 41, 59, 0.08);
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 380px;
+}
+
+/* Header */
+.Header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.Header h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1e3a5f;
+    letter-spacing: 0.5px;
+}
+
+/* Import rows */
+.loginForm form>div,
+.SignUpForm form>div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #d7dee8;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    background: #f8fafc;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.loginForm form>div:focus-within,
+.SignUpForm form>div:focus-within {
+    border-color: #3b6ea5;
+    box-shadow: 0 0 0 3px rgba(59, 110, 165, 0.12);
+    background: #ffffff;
+}
+
+/* Icons */
+.loginForm form>div svg,
+.SignUpForm form>div svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    color: #7c8aa0;
+}
+
+/* Inputs and select */
+.loginForm input,
+.loginForm select,
+.SignUpForm input,
+.SignUpForm select {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.loginForm input:focus,
+.loginForm select:focus,
+.SignUpForm input:focus,
+.SignUpForm select:focus {
+    outline: none;
+}
+
+.loginForm input::placeholder,
+.SignUpForm input::placeholder {
+    color: #a0aec0;
+}
+
+.SignUpForm select {
+    cursor: pointer;
+    color: #1e293b;
+}
+
+.SignUpForm select option {
+    color: #1e293b;
+    background: #ffffff;
+    padding: 8px;
+}
+
+.loginForm p,
+.SignUpForm p {
+    color: #c0392b;
+    font-size: 0.85rem;
+    margin: -4px 0 12px;
+    text-align: center;
+}
+
+/* Buttons */
+.Login button,
+.SignUp button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #1e3a5f;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    margin-top: 4px;
+}
+
+.Login button:hover:not(:disabled),
+.SignUp button:hover:not(:disabled) {
+    background: #2c517f;
+}
+
+.Login button:disabled,
+.SignUp button:disabled {
+    background: #9fb3cc;
+    cursor: not-allowed;
+}
+
+/* Prompt links */
+.SignUpPrompt,
+.LoginPrompt {
+    text-align: center;
+    margin-top: 18px;
+}
+
+.SignUpPrompt p,
+.LoginPrompt p {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.SignUpPrompt a,
+.LoginPrompt a {
+    color: #3b6ea5;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 6px;
+}
+
+.SignUpPrompt a:hover,
+.LoginPrompt a:hover {
+    text-decoration: underline;
+}

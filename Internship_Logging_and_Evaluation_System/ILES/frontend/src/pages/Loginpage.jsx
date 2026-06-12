@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { User as U, KeyRound as KR, Mail, LockKeyhole as LK, Gavel } from 'lucide-react';
 import { getMe, login, register } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+import './Loginpage.css';
 
 function Loginpage() {
   const [showLogin, setShowLogin] = React.useState(true);
@@ -55,7 +56,7 @@ function Loginpage() {
   };
 
   return (
-    <>
+    <div className="authPage">
       {showLogin ? (
         <div className="loginForm">
           <div className="Header">
@@ -182,7 +183,7 @@ function Loginpage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
