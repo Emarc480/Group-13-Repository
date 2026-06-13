@@ -8,7 +8,7 @@ export default function NotificationBell() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/notifications/", {
+      const res = await axios.get("https://iles-backend-4lkx.onrender.com/api/notifications/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
@@ -29,7 +29,7 @@ export default function NotificationBell() {
   const markAsRead = async (id) => {
     try {
       await axios.patch(
-        `http://127.0.0.1:8000/api/notifications/${id}/read/`,
+        `https://iles-backend-4lkx.onrender.com/api/notifications/${id}/read/`,
         {},
         {
           headers: {
@@ -46,7 +46,7 @@ export default function NotificationBell() {
   const markAllRead = async () => {
     try {
       await axios.patch(
-        "http://127.0.0.1:8000/api/notifications/mark-all-read/",
+        "https://iles-backend-4lkx.onrender.com/api/notifications/mark-all-read/",
         {},
         {
           headers: {

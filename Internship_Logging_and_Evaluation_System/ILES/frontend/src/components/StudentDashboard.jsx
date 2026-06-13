@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getLogs, createLog, updateLog, submitLog, recallLog } from "../services/logService";
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000/api/";
+const API_URL = "https://iles-backend-4lkx.onrender.com/api/";
 const authHeaders = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
 });
