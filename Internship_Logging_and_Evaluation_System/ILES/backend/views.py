@@ -121,6 +121,11 @@ class WeeklyLogViewset(viewsets.ModelViewSet):
             return Response(
                 {'error': 'Only draft logs can be submitted.'},
                 status=status.HTTP_400_BAD_REQUEST)
+        
+        if weekly_log.deadline and timezone.now().date() > weekly_log.deadline:
+            return Response(
+                {'error': 'Submission deadline has passed.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(
             weekly_log, data={'status': 'submitted'}, partial=True)

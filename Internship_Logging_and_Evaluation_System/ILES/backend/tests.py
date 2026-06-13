@@ -164,16 +164,14 @@ class ILESTestCase(TestCase):
     def test_cannot_submit_after_deadline(self):
         token = self.get_student_token()
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
-        # Create a log for week 1 which deadline has passed
         log = WeeklyLog.objects.create(
             placement=self.placement,
             week_number=1,
             activities='Late submission.',
-            status='draft'
+            status='draft',
+            deadline=date(2020, 1, 1)
         )
-        response = self.client.patch(f'/api/logs/{log.id}/', {
-            'status': 'submitted'
-        }, format='json')
+        response = self.client.post(f'/api/logs/{log.id}/submit/', format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     # Test 9 - Permission check
