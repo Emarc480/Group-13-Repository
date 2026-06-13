@@ -47,36 +47,33 @@ function Dashboard() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-
-      {/* Top Bar */}
+    <div style={{ display: 'flex', height: '100vh' }}>
+      {/* Sidebar */}
       <div style={{
+        width: '150px',
+        padding: '20px',
         display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        padding: '10px 20px',
-        borderBottom: '1px solid #ccc',
-        background: '#f9f9f9'
+        flexDirection: 'column',
+        gap: '10px',
+        borderRight: '1px solid #ccc'
       }}>
-        <NotificationBell />
+        <button onClick={handleProfile}>Profile</button>
+        <button onClick={handleLogout}>Logout</button>
       </div>
 
-      {/* Body */}
-      <div style={{ display: 'flex', flex: 1 }}>
-        {/* Sidebar */}
+      {/* Main content area (includes its own top bar) */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Top bar - only above main content */}
         <div style={{
-          width: '150px',
-          padding: '20px',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          borderRight: '1px solid #ccc'
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          padding: '5px 20px'
         }}>
-          <button onClick={handleProfile}>Profile</button>
-          <button onClick={handleLogout}>Logout</button>
+          <NotificationBell />
         </div>
 
-        {/* Main Content */}
+        {/* Main content */}
         <div style={{ flex: 1, padding: '20px' }}>
           {RenderView()}
         </div>
