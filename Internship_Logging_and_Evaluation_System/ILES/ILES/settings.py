@@ -125,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
-    'https://your-frontend-name.onrender.com',  # update this after deploy
+    'https://iles-frontend-6mop.onrender.com',
 ]
 
 
