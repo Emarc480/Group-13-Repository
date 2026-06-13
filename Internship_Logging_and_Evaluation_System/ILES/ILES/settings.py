@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from decouple import config
 from pathlib import Path
 from pathlib import Path
+import dj_database_url
 # from decouple import config
 
 \
@@ -99,7 +100,7 @@ import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"postgresql://{config('DB_USER')}:{config('DB_PASSWORD')}@{config('DB_HOST')}/{config('DB_NAME')}",
+        env='DATABASE_URL',
         conn_max_age=600
     )
 }
