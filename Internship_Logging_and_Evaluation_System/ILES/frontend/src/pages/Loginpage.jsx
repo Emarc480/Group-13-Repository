@@ -3,9 +3,11 @@ import { User as U, KeyRound as KR, Mail, LockKeyhole as LK, Gavel } from 'lucid
 import { getMe, login, register } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import './Loginpage.css';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function Loginpage() {
-  const [showLogin, setShowLogin] = React.useState(true);
+  const location = useLocation();
+  const [showLogin, setShowLogin] = React.useState(!location.state?.showSignup);
   const navigate = useNavigate();
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [registerData, setRegisterData] = useState({

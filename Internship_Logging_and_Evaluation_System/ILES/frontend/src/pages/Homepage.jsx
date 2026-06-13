@@ -19,7 +19,7 @@ function Homepage() {
                     <button onClick={() => navigate('/login')} style={{ background: '#185FA5', color: '#fff', border: 'none', padding: '12px 28px', borderRadius: '8px', fontSize: '15px', fontWeight: 500, cursor: 'pointer' }}>
                         Log in
                     </button>
-                    <button onClick={() => navigate('/login#signup')} style={{ background: 'transparent', color: '#fff', border: '1px solid #333', padding: '12px 24px', borderRadius: '8px', fontSize: '15px', fontWeight: 500, cursor: 'pointer' }}>
+                    <button onClick={() => navigate('/login', { state: { showSignup: true } })} style={{ background: 'transparent', color: '#fff', border: '1px solid #333', padding: '12px 24px', borderRadius: '8px', fontSize: '15px', fontWeight: 500, cursor: 'pointer' }}>
                         Register
                     </button>
                 </div>
