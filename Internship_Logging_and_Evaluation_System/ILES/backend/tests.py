@@ -1,3 +1,5 @@
+from logging import log
+
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -164,15 +166,9 @@ class ILESTestCase(TestCase):
             week_number=10,
             activities='Late submission.',
             status='draft',
-<<<<<<< HEAD
             deadline=date(2020, 1, 1)
         )
         response = self.client.post(f'/api/logs/{log.id}/submit/', format='json')
-=======
-            deadline=date.today() - timedelta(days=1)
-        )
-        response = self.client.post(f'/api/logs/{log.id}/submit/')
->>>>>>> arnold-backend
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     # Test 9 - Permission check
